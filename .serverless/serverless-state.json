@@ -1,0 +1,248 @@
+{
+  "service": {
+    "service": "menu-qr-frontend",
+    "serviceObject": {
+      "name": "menu-qr-frontend"
+    },
+    "provider": {
+      "name": "aws",
+      "runtime": "nodejs18.x",
+      "region": "us-east-1",
+      "stage": "local",
+      "versionFunctions": true,
+      "compiledCloudFormationTemplate": {
+        "AWSTemplateFormatVersion": "2010-09-09",
+        "Description": "The AWS CloudFormation template for this Serverless application",
+        "Resources": {
+          "StaticWebsiteBucket": {
+            "Type": "AWS::S3::Bucket",
+            "Properties": {
+              "BucketName": "menu-qr-frontend",
+              "PublicAccessBlockConfiguration": {
+                "BlockPublicAcls": false,
+                "BlockPublicPolicy": false,
+                "IgnorePublicAcls": false,
+                "RestrictPublicBuckets": false
+              }
+            }
+          },
+          "WebAppS3BucketPolicy": {
+            "Type": "AWS::S3::BucketPolicy",
+            "Properties": {
+              "Bucket": {
+                "Ref": "StaticWebsiteBucket"
+              },
+              "PolicyDocument": {
+                "Statement": [
+                  {
+                    "Action": "s3:GetObject",
+                    "Effect": "Allow",
+                    "Resource": {
+                      "Fn::Sub": "arn:aws:s3:::menu-qr-frontend/*"
+                    },
+                    "Principal": "*"
+                  }
+                ]
+              }
+            }
+          },
+          "CloudFrontDistribution": {
+            "Type": "AWS::CloudFront::Distribution",
+            "Properties": {
+              "DistributionConfig": {
+                "Origins": [
+                  {
+                    "DomainName": {
+                      "Fn::GetAtt": [
+                        "StaticWebsiteBucket",
+                        "DomainName"
+                      ]
+                    },
+                    "Id": "S3-MenuQr",
+                    "S3OriginConfig": {
+                      "OriginAccessIdentity": ""
+                    }
+                  }
+                ],
+                "Enabled": true,
+                "DefaultRootObject": "index.html",
+                "DefaultCacheBehavior": {
+                  "TargetOriginId": "S3-MenuQr",
+                  "ViewerProtocolPolicy": "redirect-to-https",
+                  "AllowedMethods": [
+                    "GET",
+                    "HEAD"
+                  ],
+                  "CachedMethods": [
+                    "GET",
+                    "HEAD"
+                  ],
+                  "ForwardedValues": {
+                    "QueryString": false,
+                    "Cookies": {
+                      "Forward": "none"
+                    }
+                  },
+                  "MinTTL": 0
+                },
+                "ErrorResponses": [
+                  {
+                    "ErrorCode": 404,
+                    "ResponsePagePath": "/index.html",
+                    "ResponseCode": 200
+                  },
+                  {
+                    "ErrorCode": 403,
+                    "ResponsePagePath": "/index.html",
+                    "ResponseCode": 200
+                  }
+                ],
+                "ViewerCertificate": {
+                  "CloudFrontDefaultCertificate": true
+                }
+              }
+            }
+          }
+        },
+        "Outputs": {
+          "ServerlessDeploymentBucketName": {
+            "Value": "serverless-framework-deployments-us-east-1-e469ae14-d620",
+            "Export": {
+              "Name": "sls-menu-qr-frontend-local-ServerlessDeploymentBucketName"
+            }
+          }
+        }
+      }
+    },
+    "custom": {
+      "client": {
+        "bucketName": "menu-qr-frontend",
+        "distributionFolder": "dist"
+      }
+    },
+    "plugins": [
+      "serverless-finch",
+      "serverless-cloudfront-invalidate"
+    ],
+    "pluginsData": {},
+    "functions": {},
+    "resources": {
+      "Resources": {
+        "StaticWebsiteBucket": {
+          "Type": "AWS::S3::Bucket",
+          "Properties": {
+            "BucketName": "menu-qr-frontend",
+            "PublicAccessBlockConfiguration": {
+              "BlockPublicAcls": false,
+              "BlockPublicPolicy": false,
+              "IgnorePublicAcls": false,
+              "RestrictPublicBuckets": false
+            }
+          }
+        },
+        "WebAppS3BucketPolicy": {
+          "Type": "AWS::S3::BucketPolicy",
+          "Properties": {
+            "Bucket": {
+              "Ref": "StaticWebsiteBucket"
+            },
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": "s3:GetObject",
+                  "Effect": "Allow",
+                  "Resource": {
+                    "Fn::Sub": "arn:aws:s3:::menu-qr-frontend/*"
+                  },
+                  "Principal": "*"
+                }
+              ]
+            }
+          }
+        },
+        "CloudFrontDistribution": {
+          "Type": "AWS::CloudFront::Distribution",
+          "Properties": {
+            "DistributionConfig": {
+              "Origins": [
+                {
+                  "DomainName": {
+                    "Fn::GetAtt": [
+                      "StaticWebsiteBucket",
+                      "DomainName"
+                    ]
+                  },
+                  "Id": "S3-MenuQr",
+                  "S3OriginConfig": {
+                    "OriginAccessIdentity": ""
+                  }
+                }
+              ],
+              "Enabled": true,
+              "DefaultRootObject": "index.html",
+              "DefaultCacheBehavior": {
+                "TargetOriginId": "S3-MenuQr",
+                "ViewerProtocolPolicy": "redirect-to-https",
+                "AllowedMethods": [
+                  "GET",
+                  "HEAD"
+                ],
+                "CachedMethods": [
+                  "GET",
+                  "HEAD"
+                ],
+                "ForwardedValues": {
+                  "QueryString": false,
+                  "Cookies": {
+                    "Forward": "none"
+                  }
+                },
+                "MinTTL": 0
+              },
+              "ErrorResponses": [
+                {
+                  "ErrorCode": 404,
+                  "ResponsePagePath": "/index.html",
+                  "ResponseCode": 200
+                },
+                {
+                  "ErrorCode": 403,
+                  "ResponsePagePath": "/index.html",
+                  "ResponseCode": 200
+                }
+              ],
+              "ViewerCertificate": {
+                "CloudFrontDefaultCertificate": true
+              }
+            }
+          }
+        }
+      },
+      "Outputs": {}
+    },
+    "configValidationMode": "warn",
+    "serviceFilename": "serverless.yml",
+    "initialServerlessConfig": {
+      "service": "menu-qr-frontend",
+      "provider": {
+        "$ref": "$[\"service\"][\"provider\"]"
+      },
+      "plugins": {
+        "$ref": "$[\"service\"][\"plugins\"]"
+      },
+      "custom": {
+        "$ref": "$[\"service\"][\"custom\"]"
+      },
+      "resources": {
+        "$ref": "$[\"service\"][\"resources\"]"
+      }
+    },
+    "appId": null,
+    "orgId": null,
+    "layers": {}
+  },
+  "package": {
+    "artifactDirectoryName": "serverless/menu-qr-frontend/local/1729480982442-2024-10-21T03:23:02.442Z",
+    "artifact": ""
+  }
+}

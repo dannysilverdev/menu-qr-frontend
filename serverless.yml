@@ -1,0 +1,95 @@
+service: menu-qr-frontend
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  stage: ${opt:stage, 'local'}
+  environment:
+    API_URL: ${env:VITE_API_URL}
+    NODE_ENV: ${opt:stage, 'local'}
+
+plugins:
+  - serverless-finch
+  - serverless-cloudfront-invalidate
+  - serverless-domain-manager
+
+custom:
+  customDomain:
+    domainName: dljrvybt2jogj.cloudfront.net
+    basePath: ''
+    stage: ${self:provider.stage, 'dev'}
+    createRoute53Record: true
+    endpointType: 'regional'
+    securityPolicy: tls_1_2
+    allowPathMatching: true
+  invalidateCloudfrontCache:
+    paths:
+      - '/*'
+  client:
+    bucketName: menu-qr-frontend  # Cambia al nombre de tu bucket S3
+    distributionFolder: dist  # Carpeta donde Vite genera el build
+    region: us-east-1  # Asegúrate de que la región esté definida
+    distributionIdKey: EPTWUVR08J1G8  # Si usas CloudFront
+    acl: public-read  # Puedes descomentar si necesitas ACLs
+    indexDocument: index.html  # Define index.html como el documento de índice
+    errorDocument: index.html  # Define index.html como el documento de error
+    websiteConfiguration:
+      indexDocument: index.html
+      errorDocument: index.html
+
+resources:
+  Resources:
+    StaticWebsiteBucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: menu-qr-frontend
+        PublicAccessBlockConfiguration:
+          BlockPublicAcls: false
+          BlockPublicPolicy: false
+          IgnorePublicAcls: false
+          RestrictPublicBuckets: false
+
+    CloudFrontDistribution:
+      Type: AWS::CloudFront::Distribution
+      Properties:
+        DistributionConfig:
+          Origins:
+            - DomainName: !GetAtt StaticWebsiteBucket.DomainName
+              Id: S3-MenuQr
+              S3OriginConfig:
+                OriginAccessIdentity: !Sub "origin-access-identity/cloudfront/${AWS::Region}"
+          Enabled: true
+          DefaultRootObject: index.html
+          DefaultCacheBehavior:
+            TargetOriginId: S3-MenuQr
+            ViewerProtocolPolicy: redirect-to-https
+            AllowedMethods:
+              - GET
+              - HEAD
+            CachedMethods:
+              - GET
+              - HEAD
+            ForwardedValues:
+              QueryString: false
+              Cookies:
+                Forward: none
+            MinTTL: 300  # Tiempo mínimo de caché (ajusta si lo necesitas)
+          ErrorResponses:
+          - ErrorCode: 404
+            ResponsePagePath: /index.html
+            ResponseCode: 200
+          - ErrorCode: 403
+            ResponsePagePath: /index.html
+            ResponseCode: 200  
+
+    StaticWebsiteBucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref StaticWebsiteBucket
+        PolicyDocument:
+          Statement:
+            - Effect: Allow
+              Principal: "*"
+              Action: "s3:GetObject"
+              Resource: "arn:aws:s3:::menu-qr-frontend/*"

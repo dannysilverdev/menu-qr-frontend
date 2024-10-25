@@ -1,0 +1,103 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "The AWS CloudFormation template for this Serverless application",
+  "Resources": {
+    "StaticWebsiteBucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": "menu-qr-frontend",
+        "PublicAccessBlockConfiguration": {
+          "BlockPublicAcls": false,
+          "BlockPublicPolicy": false,
+          "IgnorePublicAcls": false,
+          "RestrictPublicBuckets": false
+        }
+      }
+    },
+    "WebAppS3BucketPolicy": {
+      "Type": "AWS::S3::BucketPolicy",
+      "Properties": {
+        "Bucket": {
+          "Ref": "StaticWebsiteBucket"
+        },
+        "PolicyDocument": {
+          "Statement": [
+            {
+              "Action": "s3:GetObject",
+              "Effect": "Allow",
+              "Resource": {
+                "Fn::Sub": "arn:aws:s3:::menu-qr-frontend/*"
+              },
+              "Principal": "*"
+            }
+          ]
+        }
+      }
+    },
+    "CloudFrontDistribution": {
+      "Type": "AWS::CloudFront::Distribution",
+      "Properties": {
+        "DistributionConfig": {
+          "Origins": [
+            {
+              "DomainName": {
+                "Fn::GetAtt": [
+                  "StaticWebsiteBucket",
+                  "DomainName"
+                ]
+              },
+              "Id": "S3-MenuQr",
+              "S3OriginConfig": {
+                "OriginAccessIdentity": ""
+              }
+            }
+          ],
+          "Enabled": true,
+          "DefaultRootObject": "index.html",
+          "DefaultCacheBehavior": {
+            "TargetOriginId": "S3-MenuQr",
+            "ViewerProtocolPolicy": "redirect-to-https",
+            "AllowedMethods": [
+              "GET",
+              "HEAD"
+            ],
+            "CachedMethods": [
+              "GET",
+              "HEAD"
+            ],
+            "ForwardedValues": {
+              "QueryString": false,
+              "Cookies": {
+                "Forward": "none"
+              }
+            },
+            "MinTTL": 0
+          },
+          "ErrorResponses": [
+            {
+              "ErrorCode": 404,
+              "ResponsePagePath": "/index.html",
+              "ResponseCode": 200
+            },
+            {
+              "ErrorCode": 403,
+              "ResponsePagePath": "/index.html",
+              "ResponseCode": 200
+            }
+          ],
+          "ViewerCertificate": {
+            "CloudFrontDefaultCertificate": true
+          }
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "ServerlessDeploymentBucketName": {
+      "Value": "serverless-framework-deployments-us-east-1-e469ae14-d620",
+      "Export": {
+        "Name": "sls-menu-qr-frontend-local-ServerlessDeploymentBucketName"
+      }
+    }
+  }
+}
