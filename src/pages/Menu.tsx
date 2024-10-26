@@ -7,7 +7,7 @@ import CategoryForm from '../components/CategoryForm';
 const Menu = () => {
     const [message, setMessage] = useState('');
     const [userId, setUserId] = useState<string>('');
-    const [categories, setCategories] = useState<any[]>([]); // Cambiar a un tipo más específico si es necesario
+    const [categories, setCategories] = useState<any[]>([]);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -32,7 +32,6 @@ const Menu = () => {
                     setMessage(data.message || 'Welcome to the Menu!');
                     setUserId(data.userId || '');
 
-                    // Llamar a la API para obtener categorías
                     const categoriesResponse = await fetch(`${apiUrl}/categories/${data.userId}`, {
                         headers: { Authorization: `Bearer ${token}` },
                     });
@@ -61,7 +60,28 @@ const Menu = () => {
 
     const handleCategoryCreated = (category: { categoryName: string; SK: string }) => {
         alert(`Category ${category.categoryName} created successfully!`);
-        setCategories((prevCategories) => [...prevCategories, category]); // Agregar el objeto de categoría completo
+        setCategories((prevCategories) => [...prevCategories, category]);
+    };
+
+    const handleDeleteCategory = async (categoryId: string) => {
+        const token = localStorage.getItem('token');
+
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/menu/category/${categoryId}`, {
+            method: 'DELETE',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+            },
+        });
+
+        if (response.ok) {
+            // Actualiza el estado para eliminar la categoría del frontend
+            setCategories((prevCategories) => prevCategories.filter((category) => category.SK !== `CATEGORY#${categoryId}`));
+            alert('Category deleted successfully!');
+        } else {
+            const errorData = await response.json();
+            alert(`Error: ${errorData.message}`);
+        }
     };
 
 
@@ -81,6 +101,9 @@ const Menu = () => {
                         {categories.map((category) => (
                             <li key={category.SK}>
                                 {category.categoryName}
+                                <button onClick={() => handleDeleteCategory(category.SK.split('#')[1])}>
+                                    Delete
+                                </button>
                             </li>
                         ))}
                     </ul>
