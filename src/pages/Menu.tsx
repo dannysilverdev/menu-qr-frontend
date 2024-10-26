@@ -2,9 +2,12 @@ import { useEffect, useState } from 'react';
 import { Container, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
+import CategoryForm from '../components/CategoryForm';
 
 const Menu = () => {
     const [message, setMessage] = useState('');
+    const [userId, setUserId] = useState<string>('');
+    const [categories, setCategories] = useState<any[]>([]); // Cambiar a un tipo más específico si es necesario
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -27,6 +30,19 @@ const Menu = () => {
                 if (response.ok) {
                     const data = await response.json();
                     setMessage(data.message || 'Welcome to the Menu!');
+                    setUserId(data.userId || '');
+
+                    // Llamar a la API para obtener categorías
+                    const categoriesResponse = await fetch(`${apiUrl}/categories/${data.userId}`, {
+                        headers: { Authorization: `Bearer ${token}` },
+                    });
+
+                    if (categoriesResponse.ok) {
+                        const categoriesData = await categoriesResponse.json();
+                        setCategories(categoriesData.categories || []);
+                    } else {
+                        console.error('Failed to fetch categories');
+                    }
                 } else {
                     alert('Unauthorized');
                     localStorage.removeItem('token');
@@ -43,6 +59,12 @@ const Menu = () => {
         fetchData();
     }, [navigate]);
 
+    const handleCategoryCreated = (category: { categoryName: string; SK: string }) => {
+        alert(`Category ${category.categoryName} created successfully!`);
+        setCategories((prevCategories) => [...prevCategories, category]); // Agregar el objeto de categoría completo
+    };
+
+
     return (
         <>
             <Header />
@@ -50,6 +72,19 @@ const Menu = () => {
                 <Typography variant="h4" component="h1" gutterBottom>
                     {message}
                 </Typography>
+
+                <CategoryForm userId={userId} onCategoryCreated={handleCategoryCreated} />
+
+                <div>
+                    <h2>Categories</h2>
+                    <ul>
+                        {categories.map((category) => (
+                            <li key={category.SK}>
+                                {category.categoryName}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
             </Container>
         </>
     );
