@@ -3,11 +3,27 @@ import { Container, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import CategoryForm from '../components/CategoryForm';
+import ProductForm from '../components/ProductForm';
+
+interface Product {
+    productName: string;
+    productId: string;
+    price: number;
+    description: string; // Asegúrate de que la descripción esté aquí
+}
+
+interface Category {
+    categoryName: string;
+    SK: string; // Clave única de la categoría
+    products?: Product[]; // Productos opcionales
+}
 
 const Menu = () => {
-    const [message, setMessage] = useState('');
+    const [message, setMessage] = useState<string>('');
     const [userId, setUserId] = useState<string>('');
-    const [categories, setCategories] = useState<any[]>([]);
+    const [categories, setCategories] = useState<Category[]>([]);
+    const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -32,6 +48,7 @@ const Menu = () => {
                     setMessage(data.message || 'Welcome to the Menu!');
                     setUserId(data.userId || '');
 
+                    // Obtener categorías
                     const categoriesResponse = await fetch(`${apiUrl}/categories/${data.userId}`, {
                         headers: { Authorization: `Bearer ${token}` },
                     });
@@ -58,15 +75,18 @@ const Menu = () => {
         fetchData();
     }, [navigate]);
 
-    const handleCategoryCreated = (category: { categoryName: string; SK: string }) => {
+    const handleCategoryCreated = (category: Category) => {
         alert(`Category ${category.categoryName} created successfully!`);
-        setCategories((prevCategories) => [...prevCategories, category]);
+        setCategories((prevCategories) => [...prevCategories, { ...category, products: [] }]);
     };
 
     const handleDeleteCategory = async (categoryId: string) => {
         const token = localStorage.getItem('token');
+        const categoryKey = `CATEGORY#${categoryId}`; // Asegúrate de que categoryId sea correcto
 
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/menu/category/${categoryId}`, {
+        console.log('Deleting category with key:', categoryKey); // Verifica que el key sea correcto
+
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/menu/category/${categoryId}`, { // Cambia aquí
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -75,8 +95,7 @@ const Menu = () => {
         });
 
         if (response.ok) {
-            // Actualiza el estado para eliminar la categoría del frontend
-            setCategories((prevCategories) => prevCategories.filter((category) => category.SK !== `CATEGORY#${categoryId}`));
+            setCategories((prevCategories) => prevCategories.filter((category) => category.SK !== categoryKey));
             alert('Category deleted successfully!');
         } else {
             const errorData = await response.json();
@@ -84,6 +103,31 @@ const Menu = () => {
         }
     };
 
+
+    const handleProductCreated = (product: Product, categoryId: string) => {
+        alert(`Product ${product.productName} created successfully!`);
+
+        // Verifica que el producto tenga la información requerida
+        if (!product.productName || !product.price || !product.description) {
+            console.error('Invalid product data');
+            return;
+        }
+
+        setCategories((prevCategories) =>
+            prevCategories.map((category) => {
+                if (category.SK === `CATEGORY#${categoryId}`) {
+                    return {
+                        ...category,
+                        products: [
+                            ...(category.products || []),
+                            product
+                        ], // Asegúrate de incluir el producto
+                    };
+                }
+                return category;
+            })
+        );
+    };
 
     return (
         <>
@@ -104,10 +148,30 @@ const Menu = () => {
                                 <button onClick={() => handleDeleteCategory(category.SK.split('#')[1])}>
                                     Delete
                                 </button>
+                                <button onClick={() => setSelectedCategory(category.SK.split('#')[1])}>
+                                    Add Product
+                                </button>
+                                <ul>
+                                    {category.products?.map((product) => (
+                                        <li key={product.productId}>
+                                            {product.productName} - ${product.price}
+                                            <p>Description: {product.description}</p>
+                                            <button onClick={() => handleDeleteCategory(category.SK.split('#')[1])}>
+                                                Delete
+                                            </button>
+
+                                        </li>
+                                    ))}
+                                </ul>
                             </li>
                         ))}
                     </ul>
+
                 </div>
+
+                {selectedCategory && (
+                    <ProductForm userId={userId} categoryId={selectedCategory} onProductCreated={handleProductCreated} />
+                )}
             </Container>
         </>
     );
