@@ -3,17 +3,24 @@ import { Container, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import CategoryForm from '../components/CategoryForm';
+import ProductForm from '../components/ProductForm';
+
+interface Product {
+    productName: string;
+    price: number;
+    description: string;
+}
 
 interface Category {
     categoryName: string;
     SK: string; // Clave única de la categoría
+    products?: Product[]; // Productos opcionales
 }
 
 const Menu = () => {
     const [message, setMessage] = useState<string>('');
     const [userId, setUserId] = useState<string>('');
     const [categories, setCategories] = useState<Category[]>([]);
-
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -107,6 +114,27 @@ const Menu = () => {
         }
     };
 
+    // Producto Creados
+    const handleProductCreated = (product: Product, categoryId: string) => {
+        alert(`Product ${product.productName} created successfully!`);
+
+        setCategories((prevCategories) =>
+            prevCategories.map((category) => {
+                if (category.SK === `CATEGORY#${categoryId}`) {
+                    return {
+                        ...category,
+                        products: [
+                            ...(category.products || []),
+                            product,
+                        ],
+                    };
+                }
+                return category;
+            })
+        );
+    };
+
+
     return (
         <>
             <Header />
@@ -126,6 +154,16 @@ const Menu = () => {
                                 <button onClick={() => handleDeleteCategory(category.SK.split('#')[1])}>
                                     Delete
                                 </button>
+                                {/* Agregar producto a la categoría */}
+                                <ProductForm categoryId={category.SK.split('#')[1]} onProductCreated={(product) => handleProductCreated(product, category.SK.split('#')[1])} />
+                                <ul>
+                                    {category.products?.map((product, index) => (
+                                        <li key={index}>
+                                            {product.productName} - ${product.price}
+                                            <p>Description: {product.description}</p>
+                                        </li>
+                                    ))}
+                                </ul>
                             </li>
                         ))}
                     </ul>

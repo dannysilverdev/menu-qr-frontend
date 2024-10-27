@@ -1,52 +1,47 @@
+// src/components/ProductForm.tsx
 import React, { useState } from 'react';
 
 interface ProductFormProps {
-    userId: string;
-    categoryId: string;
-    onProductCreated: (product: { productName: string; productId: string; price: number; description: string; }, categoryId: string) => void; // Asegúrate de que la firma incluya categoryId
+    categoryId: string; // ID de la categoría a la que se agregará el producto
+    onProductCreated: (product: { productName: string; price: number; description: string; productId: string; createdAt: string; }) => void;
 }
 
-const ProductForm: React.FC<ProductFormProps> = ({ userId, categoryId, onProductCreated }) => {
+const ProductForm: React.FC<ProductFormProps> = ({ categoryId, onProductCreated }) => {
     const [productName, setProductName] = useState('');
-    const [price, setPrice] = useState(0);
+    const [price, setPrice] = useState<number | ''>('');
     const [description, setDescription] = useState('');
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
 
-        const token = localStorage.getItem('token');
-
-        const productData = {
-            userId,
-            categoryId,
-            productName,
-            price,
-            description,
-        };
+        if (price === '') {
+            alert('Price is required');
+            return;
+        }
 
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/menu/category/${categoryId}/product`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 },
-                body: JSON.stringify(productData),
+                body: JSON.stringify({ productName, price, description }),
             });
 
             if (response.ok) {
                 const data = await response.json();
-                onProductCreated({ productName, productId: data.productId, price, description }, categoryId); // Pasar categoryId
+                onProductCreated(data.product); // Pasar el producto creado al padre
                 setProductName('');
-                setPrice(0);
+                setPrice('');
                 setDescription('');
             } else {
                 const errorData = await response.json();
                 alert(`Error: ${errorData.message}`);
             }
         } catch (error) {
-            console.error('Error adding product:', error);
-            alert('Failed to add product. Please try again.');
+            console.error('Error creating product:', error);
+            alert('Failed to create product. Please try again.');
         }
     };
 
@@ -70,6 +65,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ userId, categoryId, onProduct
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Description"
+                required
             />
             <button type="submit">Add Product</button>
         </form>
