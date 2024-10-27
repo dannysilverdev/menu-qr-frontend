@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 interface CategoryFormProps {
     userId: string;
-    onCategoryCreated: (category: { categoryName: string; SK: string }) => void; // Cambiar aquí
+    onCategoryCreated: (category: { categoryName: string; SK: string }) => void;
 }
 
 const CategoryForm: React.FC<CategoryFormProps> = ({ userId, onCategoryCreated }) => {
@@ -23,7 +23,8 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ userId, onCategoryCreated }
 
             if (response.ok) {
                 const data = await response.json();
-                onCategoryCreated({ categoryName: data.categoryName, SK: data.categoryId }); // Cambiar aquí
+                // Asegúrate de que data tenga la estructura correcta
+                onCategoryCreated({ categoryName: data.categoryName, SK: data.categoryId });
                 setCategoryName('');
             } else {
                 const errorData = await response.json();

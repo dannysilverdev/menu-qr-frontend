@@ -65,14 +65,29 @@ const Menu = () => {
         fetchData();
     }, [navigate]);
 
-    const handleCategoryCreated = (category: Category) => {
+
+    // Categoria creada
+    const handleCategoryCreated = (category: { categoryName: string; SK: string }) => {
         alert(`Category ${category.categoryName} created successfully!`);
-        setCategories((prevCategories) => [...prevCategories, category]);
+        console.log('Created category id:', category);
+        console.log('Category SK:', category.SK);
+
+        // Agregar el prefijo CATEGORY# al SK y actualizar el estado con la nueva categoría
+        const updatedCategory = {
+            categoryName: category.categoryName,
+            SK: `CATEGORY#${category.SK}`, // Agregar el prefijo aquí
+        };
+
+        // Actualiza el estado con la nueva categoría
+        setCategories((prevCategories) => [...prevCategories, updatedCategory]);
     };
 
+    // Categoria Eliminada
     const handleDeleteCategory = async (categoryId: string) => {
         const token = localStorage.getItem('token');
-        const categoryKey = `CATEGORY#${categoryId}`;
+        const categoryKey = `CATEGORY#${categoryId}`; // Aquí utilizamos el prefijo
+
+        console.log('Deleting category with key:', categoryKey); // Verifica que el key sea correcto
 
         const response = await fetch(`${import.meta.env.VITE_API_URL}/menu/category/${categoryId}`, {
             method: 'DELETE',
@@ -83,6 +98,7 @@ const Menu = () => {
         });
 
         if (response.ok) {
+            // Actualiza el estado eliminando la categoría que fue eliminada
             setCategories((prevCategories) => prevCategories.filter((category) => category.SK !== categoryKey));
             alert('Category deleted successfully!');
         } else {
@@ -106,9 +122,7 @@ const Menu = () => {
                     <ul>
                         {categories.map((category) => (
                             <li key={category.SK}>
-                                {typeof category.categoryName === 'string' && category.categoryName.length > 0
-                                    ? category.categoryName
-                                    : 'Unnamed Category'}
+                                {category.categoryName} (ID: {category.SK.split('#')[1]})
                                 <button onClick={() => handleDeleteCategory(category.SK.split('#')[1])}>
                                     Delete
                                 </button>
