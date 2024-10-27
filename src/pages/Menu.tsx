@@ -9,6 +9,9 @@ interface Product {
     productName: string;
     price: number;
     description: string;
+    productId: string;
+    createdAt: string;
+    categoryId: string; // Agregado
 }
 
 interface Category {
@@ -115,8 +118,11 @@ const Menu = () => {
     };
 
     // Producto Creados
-    const handleProductCreated = (product: Product, categoryId: string) => {
+    const handleProductCreated = (product: Omit<Product, 'categoryId'>, categoryId: string) => {
         alert(`Product ${product.productName} created successfully!`);
+
+        // Asegurarse de que el producto cumple con la interfaz `Product` incluyendo `categoryId`
+        const newProduct = { ...product, categoryId };
 
         setCategories((prevCategories) =>
             prevCategories.map((category) => {
@@ -125,7 +131,7 @@ const Menu = () => {
                         ...category,
                         products: [
                             ...(category.products || []),
-                            product,
+                            newProduct, // Agrega el producto con `categoryId`
                         ],
                     };
                 }
