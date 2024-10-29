@@ -35,6 +35,7 @@ const Login = () => {
             if (response.ok) {
                 const { token } = await response.json();
                 localStorage.setItem('token', token);
+                localStorage.setItem('username', username);
                 navigate('/home');
             } else {
                 setError('Login failed. Please check your credentials and try again.');

@@ -1,7 +1,7 @@
 {
   "/home/dannysilver/menu-qr/frontend": {
     "versionSfCore": null,
-    "versionFramework": "4.4.6",
+    "versionFramework": "4.4.7",
     "isWithinCompose": false,
     "isCompose": false,
     "composeOrgName": null,
@@ -16,10 +16,6 @@
               "runtime": "nodejs18.x",
               "region": "us-east-1",
               "stage": "local",
-              "environment": {
-                "API_URL": "https://n3j1x0wcc5.execute-api.us-east-1.amazonaws.com/dev",
-                "NODE_ENV": "local"
-              },
               "versionFunctions": true
             },
             "plugins": [
@@ -27,6 +23,17 @@
               "serverless-cloudfront-invalidate",
               "serverless-domain-manager"
             ],
+            "package": {
+              "individually": true,
+              "exclude": [
+                "node_modules/aws-sdk/**",
+                ".git/**",
+                ".vscode/**",
+                "tests/**",
+                "docs/**"
+              ],
+              "artifactsS3KeyDirname": "serverless/menu-qr-frontend/local/code-artifacts"
+            },
             "custom": {
               "customDomain": {
                 "domainName": "dljrvybt2jogj.cloudfront.net",
@@ -164,165 +171,6 @@
         "resolvers": {}
       },
       "default-aws-credential-resolver": "<REDACTED>",
-      "env": {
-        "instance": {
-          "credentials": "<REDACTED>",
-          "serviceConfigFile": {
-            "service": "menu-qr-frontend",
-            "provider": {
-              "name": "aws",
-              "runtime": "nodejs18.x",
-              "region": "us-east-1",
-              "stage": "local",
-              "environment": {
-                "API_URL": "https://n3j1x0wcc5.execute-api.us-east-1.amazonaws.com/dev",
-                "NODE_ENV": "local"
-              },
-              "versionFunctions": true
-            },
-            "plugins": [
-              "serverless-finch",
-              "serverless-cloudfront-invalidate",
-              "serverless-domain-manager"
-            ],
-            "custom": {
-              "customDomain": {
-                "domainName": "dljrvybt2jogj.cloudfront.net",
-                "basePath": "",
-                "stage": "local",
-                "createRoute53Record": true,
-                "endpointType": "regional",
-                "securityPolicy": "tls_1_2",
-                "allowPathMatching": true
-              },
-              "invalidateCloudfrontCache": {
-                "paths": [
-                  "/*"
-                ]
-              },
-              "client": {
-                "bucketName": "menu-qr-frontend",
-                "distributionFolder": "dist",
-                "region": "us-east-1",
-                "distributionIdKey": "EPTWUVR08J1G8",
-                "acl": "public-read",
-                "indexDocument": "index.html",
-                "errorDocument": "index.html",
-                "websiteConfiguration": {
-                  "indexDocument": "index.html",
-                  "errorDocument": "index.html"
-                }
-              }
-            },
-            "resources": {
-              "Resources": {
-                "StaticWebsiteBucket": {
-                  "Type": "AWS::S3::Bucket",
-                  "Properties": {
-                    "BucketName": "menu-qr-frontend",
-                    "PublicAccessBlockConfiguration": {
-                      "BlockPublicAcls": false,
-                      "BlockPublicPolicy": false,
-                      "IgnorePublicAcls": false,
-                      "RestrictPublicBuckets": false
-                    }
-                  }
-                },
-                "CloudFrontDistribution": {
-                  "Type": "AWS::CloudFront::Distribution",
-                  "Properties": {
-                    "DistributionConfig": {
-                      "Origins": [
-                        {
-                          "DomainName": {
-                            "Fn::GetAtt": [
-                              "StaticWebsiteBucket",
-                              "DomainName"
-                            ]
-                          },
-                          "Id": "S3-MenuQr",
-                          "S3OriginConfig": {
-                            "OriginAccessIdentity": {
-                              "Fn::Sub": "origin-access-identity/cloudfront/${AWS::Region}"
-                            }
-                          }
-                        }
-                      ],
-                      "Enabled": true,
-                      "DefaultRootObject": "index.html",
-                      "DefaultCacheBehavior": {
-                        "TargetOriginId": "S3-MenuQr",
-                        "ViewerProtocolPolicy": "redirect-to-https",
-                        "AllowedMethods": [
-                          "GET",
-                          "HEAD"
-                        ],
-                        "CachedMethods": [
-                          "GET",
-                          "HEAD"
-                        ],
-                        "ForwardedValues": {
-                          "QueryString": false,
-                          "Cookies": {
-                            "Forward": "none"
-                          }
-                        },
-                        "MinTTL": 300
-                      },
-                      "ErrorResponses": [
-                        {
-                          "ErrorCode": 404,
-                          "ResponsePagePath": "/index.html",
-                          "ResponseCode": 200
-                        },
-                        {
-                          "ErrorCode": 403,
-                          "ResponsePagePath": "/index.html",
-                          "ResponseCode": 200
-                        }
-                      ]
-                    }
-                  }
-                },
-                "StaticWebsiteBucketPolicy": {
-                  "Type": "AWS::S3::BucketPolicy",
-                  "Properties": {
-                    "Bucket": {
-                      "Ref": "StaticWebsiteBucket"
-                    },
-                    "PolicyDocument": {
-                      "Statement": [
-                        {
-                          "Effect": "Allow",
-                          "Principal": "*",
-                          "Action": "s3:GetObject",
-                          "Resource": "arn:aws:s3:::menu-qr-frontend/*"
-                        }
-                      ]
-                    }
-                  }
-                }
-              }
-            }
-          },
-          "configFileDirPath": "/home/dannysilver/menu-qr/frontend",
-          "config": {
-            "type": "env"
-          },
-          "options": {
-            "confirm": false
-          },
-          "stage": "local",
-          "dashboard": null,
-          "logger": {
-            "namespace": "s:core:resolver:env",
-            "prefix": null,
-            "prefixColor": null
-          },
-          "_credentialsPromise": "<REDACTED>"
-        },
-        "resolvers": {}
-      },
       "self": {
         "instance": {
           "credentials": "<REDACTED>",
@@ -333,10 +181,6 @@
               "runtime": "nodejs18.x",
               "region": "us-east-1",
               "stage": "local",
-              "environment": {
-                "API_URL": "https://n3j1x0wcc5.execute-api.us-east-1.amazonaws.com/dev",
-                "NODE_ENV": "local"
-              },
               "versionFunctions": true
             },
             "plugins": [
@@ -344,6 +188,17 @@
               "serverless-cloudfront-invalidate",
               "serverless-domain-manager"
             ],
+            "package": {
+              "individually": true,
+              "exclude": [
+                "node_modules/aws-sdk/**",
+                ".git/**",
+                ".vscode/**",
+                "tests/**",
+                "docs/**"
+              ],
+              "artifactsS3KeyDirname": "serverless/menu-qr-frontend/local/code-artifacts"
+            },
             "custom": {
               "customDomain": {
                 "domainName": "dljrvybt2jogj.cloudfront.net",
@@ -493,10 +348,6 @@
         "runtime": "nodejs18.x",
         "region": "us-east-1",
         "stage": "local",
-        "environment": {
-          "API_URL": "https://n3j1x0wcc5.execute-api.us-east-1.amazonaws.com/dev",
-          "NODE_ENV": "local"
-        },
         "versionFunctions": true
       },
       "plugins": [
@@ -504,6 +355,17 @@
         "serverless-cloudfront-invalidate",
         "serverless-domain-manager"
       ],
+      "package": {
+        "individually": true,
+        "exclude": [
+          "node_modules/aws-sdk/**",
+          ".git/**",
+          ".vscode/**",
+          "tests/**",
+          "docs/**"
+        ],
+        "artifactsS3KeyDirname": "serverless/menu-qr-frontend/local/code-artifacts"
+      },
       "custom": {
         "customDomain": {
           "domainName": "dljrvybt2jogj.cloudfront.net",
@@ -624,7 +486,7 @@
         }
       }
     },
-    "serviceRawFile": "service: menu-qr-frontend\n\nprovider:\n  name: aws\n  runtime: nodejs18.x\n  region: us-east-1\n  stage: ${opt:stage, 'local'}\n  environment:\n    API_URL: ${env:VITE_API_URL}\n    NODE_ENV: ${opt:stage, 'local'}\n\nplugins:\n  - serverless-finch\n  - serverless-cloudfront-invalidate\n  - serverless-domain-manager\n\ncustom:\n  customDomain:\n    domainName: dljrvybt2jogj.cloudfront.net\n    basePath: ''\n    stage: ${self:provider.stage, 'dev'}\n    createRoute53Record: true\n    endpointType: 'regional'\n    securityPolicy: tls_1_2\n    allowPathMatching: true\n  invalidateCloudfrontCache:\n    paths:\n      - '/*'\n  client:\n    bucketName: menu-qr-frontend  # Cambia al nombre de tu bucket S3\n    distributionFolder: dist  # Carpeta donde Vite genera el build\n    region: us-east-1  # Asegúrate de que la región esté definida\n    distributionIdKey: EPTWUVR08J1G8  # Si usas CloudFront\n    acl: public-read  # Puedes descomentar si necesitas ACLs\n    indexDocument: index.html  # Define index.html como el documento de índice\n    errorDocument: index.html  # Define index.html como el documento de error\n    websiteConfiguration:\n      indexDocument: index.html\n      errorDocument: index.html\n\nresources:\n  Resources:\n    StaticWebsiteBucket:\n      Type: AWS::S3::Bucket\n      Properties:\n        BucketName: menu-qr-frontend\n        PublicAccessBlockConfiguration:\n          BlockPublicAcls: false\n          BlockPublicPolicy: false\n          IgnorePublicAcls: false\n          RestrictPublicBuckets: false\n\n    CloudFrontDistribution:\n      Type: AWS::CloudFront::Distribution\n      Properties:\n        DistributionConfig:\n          Origins:\n            - DomainName: !GetAtt StaticWebsiteBucket.DomainName\n              Id: S3-MenuQr\n              S3OriginConfig:\n                OriginAccessIdentity: !Sub \"origin-access-identity/cloudfront/${AWS::Region}\"\n          Enabled: true\n          DefaultRootObject: index.html\n          DefaultCacheBehavior:\n            TargetOriginId: S3-MenuQr\n            ViewerProtocolPolicy: redirect-to-https\n            AllowedMethods:\n              - GET\n              - HEAD\n            CachedMethods:\n              - GET\n              - HEAD\n            ForwardedValues:\n              QueryString: false\n              Cookies:\n                Forward: none\n            MinTTL: 300  # Tiempo mínimo de caché (ajusta si lo necesitas)\n          ErrorResponses:\n          - ErrorCode: 404\n            ResponsePagePath: /index.html\n            ResponseCode: 200\n          - ErrorCode: 403\n            ResponsePagePath: /index.html\n            ResponseCode: 200  \n\n    StaticWebsiteBucketPolicy:\n      Type: AWS::S3::BucketPolicy\n      Properties:\n        Bucket: !Ref StaticWebsiteBucket\n        PolicyDocument:\n          Statement:\n            - Effect: Allow\n              Principal: \"*\"\n              Action: \"s3:GetObject\"\n              Resource: \"arn:aws:s3:::menu-qr-frontend/*\"",
+    "serviceRawFile": "service: menu-qr-frontend\n\nprovider:\n  name: aws\n  runtime: nodejs18.x\n  region: us-east-1\n  stage: ${opt:stage, 'local'}\n\nplugins:\n  - serverless-finch\n  - serverless-cloudfront-invalidate\n  - serverless-domain-manager\n\npackage:\n  individually: true\n  exclude:\n    - node_modules/aws-sdk/** # AWS SDK ya está preinstalado en Lambda\n    - .git/**\n    - .vscode/**\n    - tests/**\n    - docs/**\n\ncustom:\n  customDomain:\n    domainName: dljrvybt2jogj.cloudfront.net\n    basePath: ''\n    stage: ${self:provider.stage, 'dev'}\n    createRoute53Record: true\n    endpointType: 'regional'\n    securityPolicy: tls_1_2\n    allowPathMatching: true\n  invalidateCloudfrontCache:\n    paths:\n      - '/*'\n  client:\n    bucketName: menu-qr-frontend  # Cambia al nombre de tu bucket S3\n    distributionFolder: dist  # Carpeta donde Vite genera el build\n    region: us-east-1  # Asegúrate de que la región esté definida\n    distributionIdKey: EPTWUVR08J1G8  # Si usas CloudFront\n    acl: public-read  # Puedes descomentar si necesitas ACLs\n    indexDocument: index.html  # Define index.html como el documento de índice\n    errorDocument: index.html  # Define index.html como el documento de error\n    websiteConfiguration:\n      indexDocument: index.html\n      errorDocument: index.html\n\nresources:\n  Resources:\n    StaticWebsiteBucket:\n      Type: AWS::S3::Bucket\n      Properties:\n        BucketName: menu-qr-frontend\n        PublicAccessBlockConfiguration:\n          BlockPublicAcls: false\n          BlockPublicPolicy: false\n          IgnorePublicAcls: false\n          RestrictPublicBuckets: false\n\n    CloudFrontDistribution:\n      Type: AWS::CloudFront::Distribution\n      Properties:\n        DistributionConfig:\n          Origins:\n            - DomainName: !GetAtt StaticWebsiteBucket.DomainName\n              Id: S3-MenuQr\n              S3OriginConfig:\n                OriginAccessIdentity: !Sub \"origin-access-identity/cloudfront/${AWS::Region}\"\n          Enabled: true\n          DefaultRootObject: index.html\n          DefaultCacheBehavior:\n            TargetOriginId: S3-MenuQr\n            ViewerProtocolPolicy: redirect-to-https\n            AllowedMethods:\n              - GET\n              - HEAD\n            CachedMethods:\n              - GET\n              - HEAD\n            ForwardedValues:\n              QueryString: false\n              Cookies:\n                Forward: none\n            MinTTL: 300  # Tiempo mínimo de caché (ajusta si lo necesitas)\n          ErrorResponses:\n          - ErrorCode: 404\n            ResponsePagePath: /index.html\n            ResponseCode: 200\n          - ErrorCode: 403\n            ResponsePagePath: /index.html\n            ResponseCode: 200  \n\n    StaticWebsiteBucketPolicy:\n      Type: AWS::S3::BucketPolicy\n      Properties:\n        Bucket: !Ref StaticWebsiteBucket\n        PolicyDocument:\n          Statement:\n            - Effect: Allow\n              Principal: \"*\"\n              Action: \"s3:GetObject\"\n              Resource: \"arn:aws:s3:::menu-qr-frontend/*\"",
     "command": [
       "client",
       "deploy"
@@ -634,7 +496,7 @@
     },
     "error": null,
     "params": {},
-    "machineId": "6270faa67fd44e892e8b9437e3327358",
+    "machineId": "c524615301b255b693fdcb129fa7e281",
     "stage": "local",
     "accessKeyV2": "<REDACTED>",
     "accessKeyV1": "<REDACTED>",
@@ -657,7 +519,7 @@
     "serviceProviderAwsCredentials": "<REDACTED>",
     "serviceProviderAwsAccountId": "207567761860",
     "projectType": "traditional",
-    "versionSf": "4.4.6",
+    "versionSf": "4.4.7",
     "serviceProviderAwsCfStackName": "menu-qr-frontend-local",
     "integrations": {},
     "serviceUniqueId": null,

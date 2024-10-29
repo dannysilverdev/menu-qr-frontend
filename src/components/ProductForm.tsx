@@ -1,9 +1,11 @@
 // src/components/ProductForm.tsx
 import React, { useState } from 'react';
+import { TextField, Button, Box, Typography } from '@mui/material';
+import { Add as AddIcon } from '@mui/icons-material';
 
 interface ProductFormProps {
-    categoryId: string; // ID de la categoría a la que se agregará el producto
-    onProductCreated: (product: { productName: string; price: number; description: string; productId: string; createdAt: string; }) => void;
+    categoryId: string;
+    onProductCreated: (product: { productName: string; price: number; description: string; productId: string; createdAt: string }) => void;
 }
 
 const ProductForm: React.FC<ProductFormProps> = ({ categoryId, onProductCreated }) => {
@@ -31,7 +33,7 @@ const ProductForm: React.FC<ProductFormProps> = ({ categoryId, onProductCreated 
 
             if (response.ok) {
                 const data = await response.json();
-                onProductCreated(data.product); // Pasar el producto creado al padre
+                onProductCreated(data.product);
                 setProductName('');
                 setPrice('');
                 setDescription('');
@@ -46,29 +48,41 @@ const ProductForm: React.FC<ProductFormProps> = ({ categoryId, onProductCreated 
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <input
-                type="text"
+        <Box component="form" onSubmit={handleSubmit} sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 3 }}>
+            <Typography variant="h6" component="h2" gutterBottom>
+                Add New Product
+            </Typography>
+            <TextField
+                label="Product Name"
+                variant="outlined"
                 value={productName}
                 onChange={(e) => setProductName(e.target.value)}
-                placeholder="Product Name"
                 required
+                fullWidth
             />
-            <input
+            <TextField
+                label="Price"
                 type="number"
+                variant="outlined"
                 value={price}
                 onChange={(e) => setPrice(Number(e.target.value))}
-                placeholder="Price"
                 required
+                fullWidth
             />
-            <textarea
+            <TextField
+                label="Description"
+                variant="outlined"
+                multiline
+                rows={3}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Description"
                 required
+                fullWidth
             />
-            <button type="submit">Add Product</button>
-        </form>
+            <Button variant="contained" type="submit" color="primary" startIcon={<AddIcon />} fullWidth>
+                Add Product
+            </Button>
+        </Box>
     );
 };
 

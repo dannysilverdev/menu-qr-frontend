@@ -5,14 +5,20 @@ provider:
   runtime: nodejs18.x
   region: us-east-1
   stage: ${opt:stage, 'local'}
-  environment:
-    API_URL: ${env:VITE_API_URL}
-    NODE_ENV: ${opt:stage, 'local'}
 
 plugins:
   - serverless-finch
   - serverless-cloudfront-invalidate
   - serverless-domain-manager
+
+package:
+  individually: true
+  exclude:
+    - node_modules/aws-sdk/** # AWS SDK ya está preinstalado en Lambda
+    - .git/**
+    - .vscode/**
+    - tests/**
+    - docs/**
 
 custom:
   customDomain:

@@ -1,5 +1,18 @@
 import { useEffect, useState } from 'react';
-import { Container, Typography } from '@mui/material';
+import {
+    Container,
+    Typography,
+    IconButton,
+    Box,
+    List,
+    ListItem,
+    ListItemText,
+    Divider,
+    Chip,
+    Modal,
+    useTheme,
+} from '@mui/material';
+import { Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import CategoryForm from '../components/CategoryForm';
@@ -11,20 +24,22 @@ interface Product {
     description: string;
     productId: string;
     createdAt: string;
-    categoryId: string; // Agregado
+    categoryId: string;
 }
 
 interface Category {
     categoryName: string;
-    SK: string; // Clave única de la categoría
-    products?: Product[]; // Productos opcionales
+    SK: string;
+    products?: Product[];
 }
 
 const Menu = () => {
     const [message, setMessage] = useState<string>('');
     const [userId, setUserId] = useState<string>('');
     const [categories, setCategories] = useState<Category[]>([]);
+    const [openProductForm, setOpenProductForm] = useState<{ open: boolean; categoryId: string | null }>({ open: false, categoryId: null });
     const navigate = useNavigate();
+    const theme = useTheme();
 
     useEffect(() => {
         const fetchData = async () => {
@@ -48,7 +63,6 @@ const Menu = () => {
                     setMessage(data.message || 'Welcome to the Menu!');
                     setUserId(data.userId || '');
 
-                    // Obtener categorías
                     const categoriesResponse = await fetch(`${apiUrl}/categories/${data.userId}`, {
                         headers: { Authorization: `Bearer ${token}` },
                     });
@@ -75,29 +89,25 @@ const Menu = () => {
         fetchData();
     }, [navigate]);
 
-
-    // Categoria creada
     const handleCategoryCreated = (category: { categoryName: string; SK: string }) => {
         alert(`Category ${category.categoryName} created successfully!`);
-        console.log('Created category id:', category);
-        console.log('Category SK:', category.SK);
-
-        // Agregar el prefijo CATEGORY# al SK y actualizar el estado con la nueva categoría
         const updatedCategory = {
             categoryName: category.categoryName,
-            SK: `CATEGORY#${category.SK}`, // Agregar el prefijo aquí
+            SK: `CATEGORY#${category.SK}`,
         };
-
-        // Actualiza el estado con la nueva categoría
         setCategories((prevCategories) => [...prevCategories, updatedCategory]);
     };
 
-    // Categoria Eliminada
     const handleDeleteCategory = async (categoryId: string) => {
-        const token = localStorage.getItem('token');
-        const categoryKey = `CATEGORY#${categoryId}`; // Aquí utilizamos el prefijo
+        // Confirmación antes de eliminar
+        const confirmed = window.confirm('Are you sure you want to delete this category? This action cannot be undone.');
 
-        console.log('Deleting category with key:', categoryKey); // Verifica que el key sea correcto
+        if (!confirmed) {
+            return; // Salir si el usuario no confirma
+        }
+
+        const token = localStorage.getItem('token');
+        const categoryKey = `CATEGORY#${categoryId}`;
 
         const response = await fetch(`${import.meta.env.VITE_API_URL}/menu/category/${categoryId}`, {
             method: 'DELETE',
@@ -108,7 +118,6 @@ const Menu = () => {
         });
 
         if (response.ok) {
-            // Actualiza el estado eliminando la categoría que fue eliminada
             setCategories((prevCategories) => prevCategories.filter((category) => category.SK !== categoryKey));
             alert('Category deleted successfully!');
         } else {
@@ -117,11 +126,8 @@ const Menu = () => {
         }
     };
 
-    // Producto Creados
     const handleProductCreated = (product: Omit<Product, 'categoryId'>, categoryId: string) => {
         alert(`Product ${product.productName} created successfully!`);
-
-        // Asegurarse de que el producto cumple con la interfaz `Product` incluyendo `categoryId`
         const newProduct = { ...product, categoryId };
 
         setCategories((prevCategories) =>
@@ -131,7 +137,7 @@ const Menu = () => {
                         ...category,
                         products: [
                             ...(category.products || []),
-                            newProduct, // Agrega el producto con `categoryId`
+                            newProduct,
                         ],
                     };
                 }
@@ -140,40 +146,83 @@ const Menu = () => {
         );
     };
 
+    const openProductModal = (categoryId: string) => {
+        setOpenProductForm({ open: true, categoryId });
+    };
+
+    const closeProductModal = () => {
+        setOpenProductForm({ open: false, categoryId: null });
+    };
 
     return (
         <>
             <Header />
             <Container maxWidth="sm">
-                <Typography variant="h4" component="h1" gutterBottom>
+                <Typography variant="h5" component="h1" gutterBottom align="center" sx={{ mt: 2, color: theme.palette.primary.main }}>
                     {message}
                 </Typography>
 
                 <CategoryForm userId={userId} onCategoryCreated={handleCategoryCreated} />
 
-                <div>
-                    <h2>Categories</h2>
-                    <ul>
+                <Box sx={{ mt: 4 }}>
+                    <Typography variant="h6" component="h2">
+                        Categories
+                    </Typography>
+                    <List>
                         {categories.map((category) => (
-                            <li key={category.SK}>
-                                {category.categoryName} (ID: {category.SK.split('#')[1]})
-                                <button onClick={() => handleDeleteCategory(category.SK.split('#')[1])}>
-                                    Delete
-                                </button>
-                                {/* Agregar producto a la categoría */}
-                                <ProductForm categoryId={category.SK.split('#')[1]} onProductCreated={(product) => handleProductCreated(product, category.SK.split('#')[1])} />
-                                <ul>
-                                    {category.products?.map((product, index) => (
-                                        <li key={index}>
-                                            {product.productName} - ${product.price}
-                                            <p>Description: {product.description}</p>
-                                        </li>
+                            <Box key={category.SK} sx={{ mt: 1 }}>
+                                <ListItem>
+                                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
+                                        {category.categoryName}
+                                    </Typography>
+                                    <IconButton onClick={() => handleDeleteCategory(category.SK.split('#')[1])} color="error">
+                                        <DeleteIcon />
+                                    </IconButton>
+                                    <IconButton onClick={() => openProductModal(category.SK.split('#')[1])} color="primary">
+                                        <AddIcon />
+                                    </IconButton>
+                                </ListItem>
+
+                                {/* Productos en una sola línea */}
+                                <List disablePadding>
+                                    {category.products?.map((product) => (
+                                        <ListItem key={product.productId} sx={{ display: 'flex', justifyContent: 'space-between', px: 2 }}>
+                                            <ListItemText
+                                                primary={product.productName}
+                                                primaryTypographyProps={{ variant: 'body1' }}
+                                            />
+                                            <Chip
+                                                label={`$${product.price.toFixed(2)}`}
+                                                color="primary"
+                                                size="small"
+                                                sx={{ fontWeight: 'bold' }}
+                                            />
+                                        </ListItem>
                                     ))}
-                                </ul>
-                            </li>
+                                </List>
+                                <Divider />
+                            </Box>
                         ))}
-                    </ul>
-                </div>
+                    </List>
+                </Box>
+
+                {/* Modal para agregar producto */}
+                <Modal
+                    open={openProductForm.open}
+                    onClose={closeProductModal}
+                    aria-labelledby="add-product-modal"
+                    aria-describedby="add-product-form"
+                >
+                    <Box sx={{ width: '90%', maxWidth: 400, bgcolor: 'background.paper', p: 4, mx: 'auto', mt: 8, borderRadius: 2 }}>
+                        <ProductForm
+                            categoryId={openProductForm.categoryId as string}
+                            onProductCreated={(product) => {
+                                handleProductCreated(product, openProductForm.categoryId as string);
+                                closeProductModal();
+                            }}
+                        />
+                    </Box>
+                </Modal>
             </Container>
         </>
     );

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { AppBar, Toolbar, Typography, IconButton, Drawer, Box, List, ListItem, ListItemText, Button } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import React from 'react';
@@ -6,7 +6,24 @@ import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
     const [drawerOpen, setDrawerOpen] = useState(false);
+    const [username, setUsername] = useState<string | null>(null); // Estado para el nombre de usuario
     const navigate = useNavigate();
+
+    const isProduction = import.meta.env.VITE_IS_PRODUCTION === 'true';
+
+    useEffect(() => {
+
+        console.log("Is Production:", isProduction);
+        // Intentar obtener el username de localStorage solo cuando esté disponible
+        const storedUsername = localStorage.getItem('username');
+        if (storedUsername) {
+            setUsername(storedUsername);
+            console.log(storedUsername);
+        } else {
+            console.warn("Username not found in localStorage. Make sure the user is logged in.");
+        }
+    }, [isProduction]);
+
 
     // Función para abrir o cerrar el Drawer
     const toggleDrawer = (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
@@ -34,9 +51,31 @@ const Header = () => {
                 <ListItem component="button" key="Inicio" onClick={() => navigate('/home')}>
                     <ListItemText primary="Inicio" />
                 </ListItem>
-                <ListItem component="button" key="menu" onClick={() => navigate('/menu')}>
-                    <ListItemText primary="Menu" />
+                <ListItem component="button" key="Administrar" onClick={() => navigate('/menu')}>
+                    <ListItemText primary="Administrar" />
                 </ListItem>
+
+                {username ? (
+                    <ListItem
+                        component="button"
+                        key="VerMenu"
+                        onClick={() => navigate(`/view-menu/${username}`)}
+                    >
+                        <ListItemText primary="Ver Menú" />
+                    </ListItem>
+                ) : (
+                    <ListItem
+                        component="button"
+                        key="VerMenuPlaceholder"
+                        onClick={() => {
+                            alert('Username not found. Please log in.');
+                            navigate('/login');
+                        }}
+                    >
+                        <ListItemText primary="Ver Menú" />
+                    </ListItem>
+                )}
+
                 <ListItem component="button" key="Logout" onClick={handleLogout}>
                     <ListItemText primary="Logout" />
                 </ListItem>
@@ -63,7 +102,8 @@ const Header = () => {
                     {/* Enlaces visibles solo en modo desktop */}
                     <Box sx={{ display: { xs: 'none', md: 'flex' } }}>
                         <Button color="inherit" onClick={() => navigate('/home')}>Inicio</Button>
-                        <Button color="inherit" onClick={() => navigate('/menu')}>Menú</Button>
+                        <Button color="inherit" onClick={() => navigate('/menu')}>Administrar</Button>
+                        <Button color="inherit" onClick={() => navigate(`/view-menu/${username}`)}>Ver Menú</Button>
                         <Button color="inherit" onClick={handleLogout}>Logout</Button>
                     </Box>
                 </Toolbar>
