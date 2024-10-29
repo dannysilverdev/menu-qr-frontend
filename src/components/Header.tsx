@@ -76,6 +76,10 @@ const Header = () => {
                     </ListItem>
                 )}
 
+                <ListItem component="button" key="Inicio" onClick={() => navigate('/profile')}>
+                    <ListItemText primary="Perfil" />
+                </ListItem>
+
                 <ListItem component="button" key="Logout" onClick={handleLogout}>
                     <ListItemText primary="Logout" />
                 </ListItem>
@@ -104,6 +108,7 @@ const Header = () => {
                         <Button color="inherit" onClick={() => navigate('/home')}>Inicio</Button>
                         <Button color="inherit" onClick={() => navigate('/menu')}>Administrar</Button>
                         <Button color="inherit" onClick={() => navigate(`/view-menu/${username}`)}>Ver Menú</Button>
+                        <Button color="inherit" onClick={() => navigate('/profile')}>Perfil</Button>
                         <Button color="inherit" onClick={handleLogout}>Logout</Button>
                     </Box>
                 </Toolbar>
