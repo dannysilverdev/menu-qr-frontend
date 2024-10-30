@@ -10,6 +10,7 @@ import {
     Divider,
     Chip,
     Modal,
+    TextField,
     useTheme,
 } from '@mui/material';
 import { Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
@@ -99,11 +100,10 @@ const Menu = () => {
     };
 
     const handleDeleteCategory = async (categoryId: string) => {
-        // Confirmación antes de eliminar
         const confirmed = window.confirm('Are you sure you want to delete this category? This action cannot be undone.');
 
         if (!confirmed) {
-            return; // Salir si el usuario no confirma
+            return;
         }
 
         const token = localStorage.getItem('token');
@@ -154,6 +154,34 @@ const Menu = () => {
         setOpenProductForm({ open: false, categoryId: null });
     };
 
+    const handleCategoryNameChange = (index: number, newName: string) => {
+        setCategories((prevCategories) =>
+            prevCategories.map((category, i) => (i === index ? { ...category, categoryName: newName } : category))
+        );
+    };
+
+    const handleCategoryNameBlur = async (index: number) => {
+        const category = categories[index];
+        const { SK, categoryName } = category;
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/menu/category/${SK.split('#')[1]}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                },
+                body: JSON.stringify({ categoryName }),
+            });
+
+            if (!response.ok) {
+                console.error('Failed to update category');
+            }
+        } catch (error) {
+            console.error('Error updating category:', error);
+        }
+    };
+
     return (
         <>
             <Header />
@@ -169,12 +197,17 @@ const Menu = () => {
                         Categories
                     </Typography>
                     <List>
-                        {categories.map((category) => (
+                        {categories.map((category, index) => (
                             <Box key={category.SK} sx={{ mt: 1 }}>
                                 <ListItem>
-                                    <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                                        {category.categoryName}
-                                    </Typography>
+                                    <TextField
+                                        value={category.categoryName}
+                                        onChange={(e) => handleCategoryNameChange(index, e.target.value)}
+                                        onBlur={() => handleCategoryNameBlur(index)}
+                                        variant="standard"
+                                        fullWidth
+                                        inputProps={{ style: { fontWeight: 'bold' } }}
+                                    />
                                     <IconButton onClick={() => handleDeleteCategory(category.SK.split('#')[1])} color="error">
                                         <DeleteIcon />
                                     </IconButton>
@@ -183,12 +216,12 @@ const Menu = () => {
                                     </IconButton>
                                 </ListItem>
 
-                                {/* Productos en una sola línea */}
                                 <List disablePadding>
                                     {category.products?.map((product) => (
                                         <ListItem key={product.productId} sx={{ display: 'flex', justifyContent: 'space-between', px: 2 }}>
                                             <ListItemText
                                                 primary={product.productName}
+                                                secondary={product.description}
                                                 primaryTypographyProps={{ variant: 'body1' }}
                                             />
                                             <Chip
@@ -206,7 +239,6 @@ const Menu = () => {
                     </List>
                 </Box>
 
-                {/* Modal para agregar producto */}
                 <Modal
                     open={openProductForm.open}
                     onClose={closeProductModal}

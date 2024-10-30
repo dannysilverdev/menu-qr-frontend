@@ -1,4 +1,4 @@
-// src/pages/EditProfile.tsx
+// src/pages/Profile.tsx
 import { useState, useEffect } from 'react';
 import { Container, Typography, Paper, Box, Alert } from '@mui/material';
 import { ThemeProvider } from '@mui/material/styles';
@@ -7,7 +7,7 @@ import QrCodeIcon from '@mui/icons-material/QrCode';
 import FormInput from '../components/FormInput';
 import Header from '../components/Header';
 
-const EditProfile = () => {
+const Profile = () => {  // Componente renombrado como Profile
     const [username, setUsername] = useState('');
     const [localName, setLocalName] = useState('');
     const [phoneNumber, setPhoneNumber] = useState('');
@@ -47,6 +47,7 @@ const EditProfile = () => {
                     setError('Error al cargar perfil. Intente de nuevo más tarde.');
                 }
             } catch (error) {
+                console.log(error); // Para depuración de errores de red
                 setError('Error al cargar perfil. Intente de nuevo más tarde.');
             }
         };
@@ -74,6 +75,7 @@ const EditProfile = () => {
                 body: JSON.stringify({ [fieldName]: fieldValue }), // Actualiza solo el campo modificado
             });
         } catch (error) {
+            console.log(error); // Para depuración de errores de actualización
             setError(`Error al actualizar ${fieldName}. Intente de nuevo.`);
         }
     };
@@ -106,7 +108,7 @@ const EditProfile = () => {
                                 name="localName"
                                 value={localName}
                                 onChange={(e) => setLocalName(e.target.value)}
-                                onBlur={() => handleFieldUpdate('localName', localName)} // Actualizar al perder foco
+                                onBlur={() => handleFieldUpdate('localName', localName)}
                                 required
                             />
                             <FormInput
@@ -114,7 +116,7 @@ const EditProfile = () => {
                                 name="phoneNumber"
                                 value={phoneNumber}
                                 onChange={(e) => setPhoneNumber(e.target.value)}
-                                onBlur={() => handleFieldUpdate('phoneNumber', phoneNumber)} // Actualizar al perder foco
+                                onBlur={() => handleFieldUpdate('phoneNumber', phoneNumber)}
                                 required
                             />
                             <FormInput
@@ -122,7 +124,7 @@ const EditProfile = () => {
                                 name="description"
                                 value={description}
                                 onChange={(e) => setDescription(e.target.value)}
-                                onBlur={() => handleFieldUpdate('description', description)} // Actualizar al perder foco
+                                onBlur={() => handleFieldUpdate('description', description)}
                                 multiline
                             />
                             <FormInput
@@ -130,7 +132,7 @@ const EditProfile = () => {
                                 name="socialMedia"
                                 value={socialMedia}
                                 onChange={(e) => setSocialMedia(e.target.value)}
-                                onBlur={() => handleFieldUpdate('socialMedia', socialMedia)} // Actualizar al perder foco
+                                onBlur={() => handleFieldUpdate('socialMedia', socialMedia)}
                             />
                         </form>
                     </Box>
@@ -140,4 +142,4 @@ const EditProfile = () => {
     );
 };
 
-export default EditProfile;
+export default Profile;  // Exportación como Profile

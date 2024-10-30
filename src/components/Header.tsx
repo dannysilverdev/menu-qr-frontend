@@ -48,7 +48,7 @@ const Header = () => {
             onKeyDown={toggleDrawer(false)}
         >
             <List>
-                <ListItem component="button" key="Inicio" onClick={() => navigate('/home')}>
+                <ListItem component="button" key="Home" onClick={() => navigate('/home')}>
                     <ListItemText primary="Inicio" />
                 </ListItem>
                 <ListItem component="button" key="Administrar" onClick={() => navigate('/menu')}>
@@ -58,7 +58,7 @@ const Header = () => {
                 {username ? (
                     <ListItem
                         component="button"
-                        key="VerMenu"
+                        key="ViewMenu"
                         onClick={() => navigate(`/view-menu/${username}`)}
                     >
                         <ListItemText primary="Ver Menú" />
@@ -66,7 +66,7 @@ const Header = () => {
                 ) : (
                     <ListItem
                         component="button"
-                        key="VerMenuPlaceholder"
+                        key="ViewMenuPlaceholder"
                         onClick={() => {
                             alert('Username not found. Please log in.');
                             navigate('/login');
@@ -76,7 +76,7 @@ const Header = () => {
                     </ListItem>
                 )}
 
-                <ListItem component="button" key="Inicio" onClick={() => navigate('/profile')}>
+                <ListItem component="button" key="Profile" onClick={() => navigate('/profile')}>
                     <ListItemText primary="Perfil" />
                 </ListItem>
 
