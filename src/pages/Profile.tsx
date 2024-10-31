@@ -38,11 +38,13 @@ const Profile = () => {  // Componente renombrado como Profile
 
                 if (response.ok) {
                     const data = await response.json();
-                    setUsername(data.username || '');
+
+                    setUsername(data.PK.split('#')[1] || '');
                     setLocalName(data.localName || '');
                     setPhoneNumber(data.phoneNumber || '');
                     setDescription(data.description || '');
-                    setSocialMedia((data.socialMedia || []).join(', '));
+                    setSocialMedia(Array.isArray(data.socialMedia) ? data.socialMedia.join(', ') : data.socialMedia || '');
+
                 } else {
                     setError('Error al cargar perfil. Intente de nuevo más tarde.');
                 }
