@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { TextField, Button, Box, Paper } from '@mui/material';
+import { Add as AddIcon } from '@mui/icons-material';
 
 interface CategoryFormProps {
     userId: string;
@@ -23,7 +25,6 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ userId, onCategoryCreated }
 
             if (response.ok) {
                 const data = await response.json();
-                // Asegúrate de que data tenga la estructura correcta
                 onCategoryCreated({ categoryName: data.categoryName, SK: data.categoryId });
                 setCategoryName('');
             } else {
@@ -37,16 +38,29 @@ const CategoryForm: React.FC<CategoryFormProps> = ({ userId, onCategoryCreated }
     };
 
     return (
-        <form onSubmit={handleSubmit}>
-            <input
-                type="text"
-                value={categoryName}
-                onChange={(e) => setCategoryName(e.target.value)}
-                placeholder="Category Name"
-                required
-            />
-            <button type="submit">Create Category</button>
-        </form>
+        <Paper elevation={3} sx={{ p: 2, mb: 2 }}>
+            <form onSubmit={handleSubmit}>
+                <Box display="flex" alignItems="center" gap={2}>
+                    <TextField
+                        label="Category Name"
+                        variant="outlined"
+                        fullWidth
+                        value={categoryName}
+                        onChange={(e) => setCategoryName(e.target.value)}
+                        required
+                    />
+                    <Button
+                        type="submit"
+                        variant="contained"
+                        color="primary"
+                        startIcon={<AddIcon />}
+                        sx={{ height: 'fit-content' }}
+                    >
+                        Add
+                    </Button>
+                </Box>
+            </form>
+        </Paper>
     );
 };
 

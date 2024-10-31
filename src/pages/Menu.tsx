@@ -6,10 +6,10 @@ import {
     Box,
     List,
     ListItem,
-    Divider,
     Modal,
     TextField,
     useTheme,
+    Paper
 } from '@mui/material';
 import { Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
@@ -216,81 +216,85 @@ const Menu = () => {
         <>
             <Header />
             <Container maxWidth="sm">
-                <Typography variant="h5" component="h1" gutterBottom align="center" sx={{ mt: 2, color: theme.palette.primary.main }}>
-                    {message}
-                </Typography>
+                <Paper elevation={3} sx={{ p: 3, mt: 2 }}>
+                    {/* Encabezado del mensaje */}
+                    {/*<Typography variant="h5" component="h1" gutterBottom align="center" sx={{ color: theme.palette.primary.main }}>
+                        {message}
+                    </Typography>*/}
 
-                <CategoryForm userId={userId} onCategoryCreated={handleCategoryCreated} />
+                    {/* Formulario para agregar categoría */}
+                    <CategoryForm userId={userId} onCategoryCreated={handleCategoryCreated} />
 
-                <Box sx={{ mt: 4 }}>
-                    <Typography variant="h6" component="h2">
-                        Categorías
-                    </Typography>
-                    <List>
-                        {categories.map((category, index) => (
-                            <Box key={category.SK} sx={{ mt: 2 }}>
-                                {/* Categoría */}
-                                <ListItem sx={{ bgcolor: theme.palette.background.default, p: 1 }}>
-                                    <TextField
-                                        value={category.categoryName}
-                                        onChange={(e) => handleCategoryNameChange(index, e.target.value)}
-                                        onBlur={() => handleCategoryNameBlur(index)}
-                                        variant="standard"
-                                        fullWidth
-                                        sx={{ fontWeight: 'bold', color: theme.palette.primary.main }}
-                                    />
-                                    <IconButton onClick={() => handleDeleteCategory(category.SK.split('#')[1])} color="error">
-                                        <DeleteIcon />
-                                    </IconButton>
-                                    <IconButton onClick={() => openProductModal(category.SK.split('#')[1])} color="primary">
-                                        <AddIcon />
-                                    </IconButton>
-                                </ListItem>
+                    {/* Listado de categorías y productos */}
+                    <Box sx={{ mt: 4 }}>
+                        <Typography variant="h6" component="h2" gutterBottom>
+                            Categorías
+                        </Typography>
+                        <List>
+                            {categories.map((category, index) => (
+                                <Paper key={category.SK} elevation={2} sx={{ mb: 2, p: 2 }}>
+                                    {/* Categoría */}
+                                    <ListItem sx={{ display: 'flex', alignItems: 'center', p: 0 }}>
+                                        <TextField
+                                            value={category.categoryName}
+                                            onChange={(e) => handleCategoryNameChange(index, e.target.value)}
+                                            onBlur={() => handleCategoryNameBlur(index)}
+                                            variant="standard"
+                                            fullWidth
+                                            sx={{ fontWeight: 'bold', color: theme.palette.primary.main }}
+                                        />
+                                        <IconButton onClick={() => handleDeleteCategory(category.SK.split('#')[1])} color="error">
+                                            <DeleteIcon />
+                                        </IconButton>
+                                        <IconButton onClick={() => openProductModal(category.SK.split('#')[1])} color="primary">
+                                            <AddIcon />
+                                        </IconButton>
+                                    </ListItem>
 
-                                {/* Lista de productos */}
-                                <List sx={{ pl: 3 }}>
-                                    {category.products?.map((product) => (
-                                        <ListItem key={product.productId} sx={{ display: 'flex', flexDirection: 'column', p: 1 }}>
-                                            {/* Nombre del producto */}
-                                            <TextField
-                                                label="Name"
-                                                value={product.productName}
-                                                onChange={(e) => handleProductChange(product.productId, 'productName', e.target.value)}
-                                                onBlur={() => handleProductBlur(product)}
-                                                fullWidth
-                                                variant="standard"
-                                                sx={{ mb: 1 }}
-                                            />
-                                            {/* Descripción y precio en la misma línea */}
-                                            <Box sx={{ display: 'flex', width: '100%', gap: 2 }}>
+                                    {/* Lista de productos */}
+                                    <List sx={{ mt: 1, pl: 2 }}>
+                                        {category.products?.map((product) => (
+                                            <ListItem key={product.productId} sx={{ display: 'flex', flexDirection: 'column', py: 1 }}>
+                                                {/* Nombre del producto */}
                                                 <TextField
-                                                    label="Description"
-                                                    value={product.description}
-                                                    onChange={(e) => handleProductChange(product.productId, 'description', e.target.value)}
+                                                    label="Name"
+                                                    value={product.productName}
+                                                    onChange={(e) => handleProductChange(product.productId, 'productName', e.target.value)}
                                                     onBlur={() => handleProductBlur(product)}
                                                     fullWidth
                                                     variant="standard"
+                                                    sx={{ mb: 1 }}
                                                 />
-                                                <TextField
-                                                    label="Price"
-                                                    type="number"
-                                                    value={product.price}
-                                                    onChange={(e) => handleProductChange(product.productId, 'price', parseFloat(e.target.value))}
-                                                    onBlur={() => handleProductBlur(product)}
-                                                    variant="standard"
-                                                    sx={{ maxWidth: '30%' }}
-                                                />
-                                            </Box>
-                                        </ListItem>
-                                    ))}
-                                </List>
-                                <Divider sx={{ my: 2 }} />
-                            </Box>
-                        ))}
-                    </List>
-                </Box>
+                                                {/* Descripción y precio en una sola línea */}
+                                                <Box sx={{ display: 'flex', width: '100%', gap: 2 }}>
+                                                    <TextField
+                                                        label="Description"
+                                                        value={product.description}
+                                                        onChange={(e) => handleProductChange(product.productId, 'description', e.target.value)}
+                                                        onBlur={() => handleProductBlur(product)}
+                                                        fullWidth
+                                                        variant="standard"
+                                                    />
+                                                    <TextField
+                                                        label="Price"
+                                                        type="number"
+                                                        value={product.price}
+                                                        onChange={(e) => handleProductChange(product.productId, 'price', parseFloat(e.target.value))}
+                                                        onBlur={() => handleProductBlur(product)}
+                                                        variant="standard"
+                                                        sx={{ maxWidth: '30%' }}
+                                                    />
+                                                </Box>
+                                            </ListItem>
+                                        ))}
+                                    </List>
+                                </Paper>
+                            ))}
+                        </List>
+                    </Box>
+                </Paper>
 
-
+                {/* Modal para agregar producto */}
                 <Modal
                     open={openProductForm.open}
                     onClose={closeProductModal}
@@ -309,6 +313,7 @@ const Menu = () => {
                 </Modal>
             </Container>
         </>
+
     );
 };
 
