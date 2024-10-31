@@ -224,19 +224,20 @@ const Menu = () => {
 
                 <Box sx={{ mt: 4 }}>
                     <Typography variant="h6" component="h2">
-                        Categories
+                        Categorías
                     </Typography>
                     <List>
                         {categories.map((category, index) => (
-                            <Box key={category.SK} sx={{ mt: 1 }}>
-                                <ListItem>
+                            <Box key={category.SK} sx={{ mt: 2 }}>
+                                {/* Categoría */}
+                                <ListItem sx={{ bgcolor: theme.palette.background.default, p: 1 }}>
                                     <TextField
                                         value={category.categoryName}
                                         onChange={(e) => handleCategoryNameChange(index, e.target.value)}
                                         onBlur={() => handleCategoryNameBlur(index)}
                                         variant="standard"
                                         fullWidth
-                                        inputProps={{ style: { fontWeight: 'bold' } }}
+                                        sx={{ fontWeight: 'bold', color: theme.palette.primary.main }}
                                     />
                                     <IconButton onClick={() => handleDeleteCategory(category.SK.split('#')[1])} color="error">
                                         <DeleteIcon />
@@ -246,51 +247,49 @@ const Menu = () => {
                                     </IconButton>
                                 </ListItem>
 
-                                <List disablePadding>
+                                {/* Lista de productos */}
+                                <List sx={{ pl: 3 }}>
                                     {category.products?.map((product) => (
-                                        <ListItem key={product.productId} sx={{ display: 'flex', flexDirection: 'column', px: 2 }}>
+                                        <ListItem key={product.productId} sx={{ display: 'flex', flexDirection: 'column', p: 1 }}>
+                                            {/* Nombre del producto */}
                                             <TextField
                                                 label="Name"
                                                 value={product.productName}
-                                                onChange={(e) =>
-                                                    handleProductChange(product.productId, 'productName', e.target.value)
-                                                }
+                                                onChange={(e) => handleProductChange(product.productId, 'productName', e.target.value)}
                                                 onBlur={() => handleProductBlur(product)}
                                                 fullWidth
-                                                variant="outlined"
-                                                margin="dense"
+                                                variant="standard"
+                                                sx={{ mb: 1 }}
                                             />
-                                            <TextField
-                                                label="Description"
-                                                value={product.description}
-                                                onChange={(e) =>
-                                                    handleProductChange(product.productId, 'description', e.target.value)
-                                                }
-                                                onBlur={() => handleProductBlur(product)}
-                                                fullWidth
-                                                variant="outlined"
-                                                margin="dense"
-                                            />
-                                            <TextField
-                                                label="Price"
-                                                type="number"
-                                                value={product.price}
-                                                onChange={(e) =>
-                                                    handleProductChange(product.productId, 'price', parseFloat(e.target.value))
-                                                }
-                                                onBlur={() => handleProductBlur(product)}
-                                                fullWidth
-                                                variant="outlined"
-                                                margin="dense"
-                                            />
+                                            {/* Descripción y precio en la misma línea */}
+                                            <Box sx={{ display: 'flex', width: '100%', gap: 2 }}>
+                                                <TextField
+                                                    label="Description"
+                                                    value={product.description}
+                                                    onChange={(e) => handleProductChange(product.productId, 'description', e.target.value)}
+                                                    onBlur={() => handleProductBlur(product)}
+                                                    fullWidth
+                                                    variant="standard"
+                                                />
+                                                <TextField
+                                                    label="Price"
+                                                    type="number"
+                                                    value={product.price}
+                                                    onChange={(e) => handleProductChange(product.productId, 'price', parseFloat(e.target.value))}
+                                                    onBlur={() => handleProductBlur(product)}
+                                                    variant="standard"
+                                                    sx={{ maxWidth: '30%' }}
+                                                />
+                                            </Box>
                                         </ListItem>
                                     ))}
                                 </List>
-                                <Divider />
+                                <Divider sx={{ my: 2 }} />
                             </Box>
                         ))}
                     </List>
                 </Box>
+
 
                 <Modal
                     open={openProductForm.open}
