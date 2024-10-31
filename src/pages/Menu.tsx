@@ -6,9 +6,7 @@ import {
     Box,
     List,
     ListItem,
-    ListItemText,
     Divider,
-    Chip,
     Modal,
     TextField,
     useTheme,
@@ -182,6 +180,38 @@ const Menu = () => {
         }
     };
 
+    const handleProductChange = (productId: string, field: keyof Product, value: any) => {
+        setCategories((prevCategories) =>
+            prevCategories.map((category) => ({
+                ...category,
+                products: category.products?.map((product) =>
+                    product.productId === productId ? { ...product, [field]: value } : product
+                ),
+            }))
+        );
+    };
+
+    const handleProductBlur = async (product: Product) => {
+        const { productId, productName, price, description } = product;
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/menu/product/${productId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                },
+                body: JSON.stringify({ productName, price, description }),
+            });
+
+            if (!response.ok) {
+                console.error('Failed to update product');
+            }
+        } catch (error) {
+            console.error('Error updating product:', error);
+        }
+    };
+
     return (
         <>
             <Header />
@@ -218,17 +248,40 @@ const Menu = () => {
 
                                 <List disablePadding>
                                     {category.products?.map((product) => (
-                                        <ListItem key={product.productId} sx={{ display: 'flex', justifyContent: 'space-between', px: 2 }}>
-                                            <ListItemText
-                                                primary={product.productName}
-                                                secondary={product.description}
-                                                primaryTypographyProps={{ variant: 'body1' }}
+                                        <ListItem key={product.productId} sx={{ display: 'flex', flexDirection: 'column', px: 2 }}>
+                                            <TextField
+                                                label="Name"
+                                                value={product.productName}
+                                                onChange={(e) =>
+                                                    handleProductChange(product.productId, 'productName', e.target.value)
+                                                }
+                                                onBlur={() => handleProductBlur(product)}
+                                                fullWidth
+                                                variant="outlined"
+                                                margin="dense"
                                             />
-                                            <Chip
-                                                label={`$${product.price.toFixed(2)}`}
-                                                color="primary"
-                                                size="small"
-                                                sx={{ fontWeight: 'bold' }}
+                                            <TextField
+                                                label="Description"
+                                                value={product.description}
+                                                onChange={(e) =>
+                                                    handleProductChange(product.productId, 'description', e.target.value)
+                                                }
+                                                onBlur={() => handleProductBlur(product)}
+                                                fullWidth
+                                                variant="outlined"
+                                                margin="dense"
+                                            />
+                                            <TextField
+                                                label="Price"
+                                                type="number"
+                                                value={product.price}
+                                                onChange={(e) =>
+                                                    handleProductChange(product.productId, 'price', parseFloat(e.target.value))
+                                                }
+                                                onBlur={() => handleProductBlur(product)}
+                                                fullWidth
+                                                variant="outlined"
+                                                margin="dense"
                                             />
                                         </ListItem>
                                     ))}
