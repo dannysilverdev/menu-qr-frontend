@@ -38,9 +38,17 @@ interface Category {
     products?: Product[];
 }
 
+interface User {
+    localName: string;
+    phoneNumber: string;
+    description: string;
+    socialMedia: string;
+}
+
 const ViewMenu: React.FC = () => {
     const { userId } = useParams<{ userId: string }>();
     const [categories, setCategories] = useState<Category[]>([]);
+    const [user, setUser] = useState<User | null>(null);
     const [mode, setMode] = useState<'light' | 'dark'>(useMediaQuery('(prefers-color-scheme: dark)') ? 'dark' : 'light');
 
     const theme = React.useMemo(
@@ -76,21 +84,50 @@ const ViewMenu: React.FC = () => {
                 console.error('Error en la solicitud:', error);
             }
         };
+
+        const fetchUser = async () => {
+            if (!userId) return;
+            try {
+                const apiUrl = import.meta.env.VITE_API_URL;
+                const response = await fetch(`${apiUrl}/user/${userId}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log("Datos del usuario:", data);  // Mensaje de depuración
+                    setUser({
+                        localName: data.localName,
+                        phoneNumber: data.phoneNumber,
+                        description: data.description,
+                        socialMedia: data.socialMedia,
+                    });
+                } else {
+                    console.error('Error al obtener la información del usuario');
+                }
+            } catch (error) {
+                console.error('Error en la solicitud:', error);
+            }
+        };
+
         fetchCategories();
+        fetchUser();
     }, [userId]);
 
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
             <Container maxWidth="sm" sx={{ minHeight: '100vh', bgcolor: 'background.default', py: 4 }}>
-                <Header mode={mode} toggleColorMode={toggleColorMode} />
+                <Header mode={mode} toggleColorMode={toggleColorMode} user={user} />
                 <Categories categories={categories} />
             </Container>
         </ThemeProvider>
     );
 };
 
-function Header({ mode, toggleColorMode }: { mode: 'light' | 'dark'; toggleColorMode: () => void }) {
+function Header({ mode, toggleColorMode, user }: { mode: 'light' | 'dark'; toggleColorMode: () => void; user: User | null }) {
+    // Verificamos si socialMedia es una cadena y luego aplicamos split; de lo contrario, asignamos un arreglo vacío.
+    const [instagram, facebook] = typeof user?.socialMedia === 'string'
+        ? user.socialMedia.split(',').map((url) => url.trim())
+        : [null, null];
+
     return (
         <Card sx={{ mb: 4, bgcolor: 'background.paper', boxShadow: 'none', border: '1px solid', borderColor: 'primary.main', position: 'relative' }}>
             <CardContent>
@@ -102,26 +139,35 @@ function Header({ mode, toggleColorMode }: { mode: 'light' | 'dark'; toggleColor
                     {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
                 </IconButton>
                 <Typography variant="h4" component="h1" align="center" gutterBottom>
-                    Café Delicia
+                    {user ? user.localName : 'Café Delicia'}
                 </Typography>
                 <Typography variant="body1" align="center" gutterBottom>
-                    Disfruta de nuestro café de especialidad y deliciosos pasteles caseros.
+                    {user ? user.description : 'Disfruta de nuestro café de especialidad y deliciosos pasteles caseros.'}
                 </Typography>
                 <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2 }}>
-                    <IconButton color="primary" href="tel:+34123456789" aria-label="Llamar">
-                        <PhoneIcon />
-                    </IconButton>
-                    <IconButton color="primary" href="https://instagram.com/cafedelicia" aria-label="Instagram">
-                        <InstagramIcon />
-                    </IconButton>
-                    <IconButton color="primary" href="https://facebook.com/cafedelicia" aria-label="Facebook">
-                        <FacebookIcon />
-                    </IconButton>
+                    {user && (
+                        <>
+                            <IconButton color="primary" href={`tel:${user.phoneNumber}`} aria-label="Llamar">
+                                <PhoneIcon />
+                            </IconButton>
+                            {instagram && (
+                                <IconButton color="primary" href={instagram} aria-label="Instagram">
+                                    <InstagramIcon />
+                                </IconButton>
+                            )}
+                            {facebook && (
+                                <IconButton color="primary" href={facebook} aria-label="Facebook">
+                                    <FacebookIcon />
+                                </IconButton>
+                            )}
+                        </>
+                    )}
                 </Box>
             </CardContent>
         </Card>
     );
 }
+
 
 function Categories({ categories }: { categories: Category[] }) {
     return (
