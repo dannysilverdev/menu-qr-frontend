@@ -69,7 +69,7 @@ const Profile = () => {  // Componente renombrado como Profile
             }
 
             await fetch(`${apiUrl}/user/${sessionUsername}`, {
-                method: 'PATCH',
+                method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
