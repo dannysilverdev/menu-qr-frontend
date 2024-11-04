@@ -1,11 +1,13 @@
-import { useEffect, useState } from 'react';
-import { Container, Typography } from '@mui/material';
+import { useEffect } from 'react';
+import { Container } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
+import { QRCodeSVG } from 'qrcode.react';
 
 const Home = () => {
-    const [message, setMessage] = useState('');
     const navigate = useNavigate();
+    const username = localStorage.getItem('username');
+    const menuUrl = `${import.meta.env.VITE_WEB_URL}/view-menu/${username}`;
 
     useEffect(() => {
         // Log the current environment mode
@@ -26,8 +28,7 @@ const Home = () => {
             });
 
             if (response.ok) {
-                const data = await response.json();
-                setMessage(data.message || 'Welcome Home');
+                console.log('All systems OK');
             } else {
                 alert('Unauthorized');
                 localStorage.removeItem('token');
@@ -42,9 +43,25 @@ const Home = () => {
         <>
             <Header />
             <Container maxWidth="sm">
-                <Typography variant="h4" component="h1" gutterBottom>
-                    {message}
-                </Typography>
+                <div style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    height: '100vh',
+                    padding: '1rem',
+                    textAlign: 'center',
+                }}>
+                    <h1 style={{ margin: '0.5rem 0' }}>Menú QR</h1>
+                    <p style={{ margin: '0.5rem 0' }}>Escanea para ver el menú</p>
+                    {username ? (
+                        <QRCodeSVG
+                            value={menuUrl}
+                            style={{ width: '100%', maxWidth: '400px', height: 'auto', marginTop: '1rem' }}
+                        />
+                    ) : (
+                        <p style={{ marginTop: '1rem' }}>No se encontró usuario. Inicia sesión para generar el código QR.</p>
+                    )}
+                </div>
             </Container>
         </>
     );

@@ -16,6 +16,7 @@ import {
     IconButton,
     Box,
     useMediaQuery,
+    CircularProgress,
 } from '@mui/material';
 import { useParams } from 'react-router-dom';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
@@ -49,6 +50,7 @@ const ViewMenu: React.FC = () => {
     const { userId } = useParams<{ userId: string }>();
     const [categories, setCategories] = useState<Category[]>([]);
     const [user, setUser] = useState<User | null>(null);
+    const [isLoading, setIsLoading] = useState(true);
     const [mode, setMode] = useState<'light' | 'dark'>(useMediaQuery('(prefers-color-scheme: dark)') ? 'dark' : 'light');
 
     const theme = React.useMemo(
@@ -82,6 +84,8 @@ const ViewMenu: React.FC = () => {
                 }
             } catch (error) {
                 console.error('Error en la solicitud:', error);
+            } finally {
+                setIsLoading(false); // Finalizar la carga al terminar la solicitud
             }
         };
 
@@ -92,7 +96,6 @@ const ViewMenu: React.FC = () => {
                 const response = await fetch(`${apiUrl}/user/${userId}`);
                 if (response.ok) {
                     const data = await response.json();
-                    console.log("Datos del usuario:", data);  // Mensaje de depuración
                     setUser({
                         localName: data.localName,
                         phoneNumber: data.phoneNumber,
@@ -104,6 +107,8 @@ const ViewMenu: React.FC = () => {
                 }
             } catch (error) {
                 console.error('Error en la solicitud:', error);
+            } finally {
+                setIsLoading(false); // Finalizar la carga al terminar la solicitud
             }
         };
 
@@ -116,15 +121,23 @@ const ViewMenu: React.FC = () => {
             <CssBaseline />
             <Container maxWidth="sm" sx={{ minHeight: '100vh', bgcolor: 'background.default', py: 4 }}>
                 <Header mode={mode} toggleColorMode={toggleColorMode} user={user} />
-                <Categories categories={categories} />
+                {isLoading ? (
+                    <Box display="flex" justifyContent="center" mt={4}>
+                        <CircularProgress />
+                    </Box>
+                ) : (
+                    <Categories categories={categories} />
+                )}
             </Container>
         </ThemeProvider>
     );
 };
 
 function Header({ mode, toggleColorMode, user }: { mode: 'light' | 'dark'; toggleColorMode: () => void; user: User | null }) {
-    // Verificamos si socialMedia es una cadena y luego aplicamos split; de lo contrario, asignamos un arreglo vacío.
-    const [instagram, facebook] = typeof user?.socialMedia === 'string'
+    if (!user) return null; // No renderiza nada si no hay datos de usuario
+
+    // Asegúrate de que socialMedia sea una cadena antes de dividirla
+    const [instagram, facebook] = typeof user.socialMedia === 'string'
         ? user.socialMedia.split(',').map((url) => url.trim())
         : [null, null];
 
@@ -139,35 +152,30 @@ function Header({ mode, toggleColorMode, user }: { mode: 'light' | 'dark'; toggl
                     {mode === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
                 </IconButton>
                 <Typography variant="h4" component="h1" align="center" gutterBottom>
-                    {user ? user.localName : 'Café Delicia'}
+                    {user.localName}
                 </Typography>
                 <Typography variant="body1" align="center" gutterBottom>
-                    {user ? user.description : 'Disfruta de nuestro café de especialidad y deliciosos pasteles caseros.'}
+                    {user.description}
                 </Typography>
                 <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, mt: 2 }}>
-                    {user && (
-                        <>
-                            <IconButton color="primary" href={`tel:${user.phoneNumber}`} aria-label="Llamar">
-                                <PhoneIcon />
-                            </IconButton>
-                            {instagram && (
-                                <IconButton color="primary" href={instagram} aria-label="Instagram">
-                                    <InstagramIcon />
-                                </IconButton>
-                            )}
-                            {facebook && (
-                                <IconButton color="primary" href={facebook} aria-label="Facebook">
-                                    <FacebookIcon />
-                                </IconButton>
-                            )}
-                        </>
+                    <IconButton color="primary" href={`tel:${user.phoneNumber}`} aria-label="Llamar">
+                        <PhoneIcon />
+                    </IconButton>
+                    {instagram && (
+                        <IconButton color="primary" href={instagram} aria-label="Instagram">
+                            <InstagramIcon />
+                        </IconButton>
+                    )}
+                    {facebook && (
+                        <IconButton color="primary" href={facebook} aria-label="Facebook">
+                            <FacebookIcon />
+                        </IconButton>
                     )}
                 </Box>
             </CardContent>
         </Card>
     );
 }
-
 
 function Categories({ categories }: { categories: Category[] }) {
     return (

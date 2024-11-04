@@ -59,28 +59,39 @@ const Profile = () => {  // Componente renombrado como Profile
 
     // Función para actualizar un campo en el backend
     const handleFieldUpdate = async (fieldName: string, fieldValue: string) => {
+        const token = localStorage.getItem('token');
+        const sessionUsername = localStorage.getItem('username');
+
+        // Verificar si token y userId están presentes
+        console.log("Token:", token);
+        console.log("Username (userId):", sessionUsername);
+
+        if (!token || !sessionUsername) {
+            setError('No se encontró el token de autenticación o el nombre de usuario.');
+            return;
+        }
+
         try {
-            const token = localStorage.getItem('token');
-            const sessionUsername = localStorage.getItem('username');
-
-            if (!token || !sessionUsername) {
-                setError('No se encontró el token de autenticación o el nombre de usuario.');
-                return;
-            }
-
-            await fetch(`${apiUrl}/user/${sessionUsername}`, {
+            const response = await fetch(`${apiUrl}/user/update/${sessionUsername}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ [fieldName]: fieldValue }), // Actualiza solo el campo modificado
+                body: JSON.stringify({ [fieldName]: fieldValue }),
             });
+
+            if (!response.ok) {
+                console.error("Error en la respuesta del servidor:", response.status, response.statusText);
+                setError(`Error al actualizar ${fieldName}. Intente de nuevo.`);
+            }
         } catch (error) {
-            console.log(error); // Para depuración de errores de actualización
+            console.log(error);
             setError(`Error al actualizar ${fieldName}. Intente de nuevo.`);
         }
     };
+
+
 
     return (
         <ThemeProvider theme={theme}>

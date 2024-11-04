@@ -163,7 +163,7 @@ const Menu = () => {
         const { SK, categoryName } = category;
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/menu/category/${SK.split('#')[1]}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/menu/category/${SK.split('#')[1]}/update`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -195,7 +195,7 @@ const Menu = () => {
         const { productId, productName, price, description } = product;
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/menu/product/${productId}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/menu/product/${productId}/update`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
