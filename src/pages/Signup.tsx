@@ -14,11 +14,25 @@ const Signup = () => {
     const [phoneNumber, setPhoneNumber] = useState('');
     const [description, setDescription] = useState('');
     const [socialMedia, setSocialMedia] = useState('');
+    const [image, setImage] = useState<File | null>(null);
+    const [imageBase64, setImageBase64] = useState<string | null>(null);
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
     const apiUrl = import.meta.env.VITE_API_URL;
+
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (e.target.files && e.target.files[0]) {
+            const file = e.target.files[0];
+            setImage(file);
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setImageBase64(reader.result?.toString().split(',')[1] || null); // Almacena solo la cadena base64 sin el prefijo
+            };
+            reader.readAsDataURL(file); // Convierte la imagen a base64
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -26,17 +40,20 @@ const Signup = () => {
         setIsLoading(true);
 
         try {
+            const payload = {
+                username,
+                password,
+                localName,
+                phoneNumber,
+                description,
+                socialMedia: socialMedia.split(',').map(s => s.trim()).join(','),
+                imageBase64, // Incluimos la imagen en base64
+            };
+
             const response = await fetch(`${apiUrl}/signup`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    username,
-                    password,
-                    localName,
-                    phoneNumber,
-                    description,
-                    socialMedia: socialMedia.split(',').map(s => s.trim()),
-                }),
+                body: JSON.stringify(payload),
             });
 
             if (response.ok) {
@@ -67,6 +84,25 @@ const Signup = () => {
                             <FormInput label="Número de Teléfono" name="phoneNumber" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} required />
                             <FormInput label="Descripción" name="description" value={description} onChange={(e) => setDescription(e.target.value)} multiline />
                             <FormInput label="Redes Sociales (separadas por comas)" name="socialMedia" value={socialMedia} onChange={(e) => setSocialMedia(e.target.value)} />
+
+                            {/* Campo para la imagen */}
+                            <Box sx={{ mt: 2 }}>
+                                <FormInput
+                                    label="Imagen de Perfil"
+                                    type="file"
+                                    name="image"
+                                    onChange={handleImageChange}
+                                />
+                            </Box>
+
+                            {/* Vista previa de la imagen (opcional) */}
+                            {image && (
+                                <Box sx={{ mt: 2, textAlign: 'center' }}>
+                                    <Typography variant="body2">Vista previa de la imagen:</Typography>
+                                    <img src={URL.createObjectURL(image)} alt="Vista previa" width="100" height="100" style={{ marginTop: '8px', borderRadius: '50%' }} />
+                                </Box>
+                            )}
+
                             {error && (
                                 <Alert severity="error" sx={{ mt: 2 }}>
                                     {error}

@@ -26,6 +26,14 @@ import FacebookIcon from '@mui/icons-material/Facebook';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 
+//import imagen from '../assets/imagen.jpg'; // Importa la imagen 
+const s3_bucket = import.meta.env.VITE_BUCKET_NAME;
+const aws_region = import.meta.env.VITE_REGION;
+const username = localStorage.getItem('username');
+console.log(username);
+const imageUrl = `https://${s3_bucket}.s3.${aws_region}.amazonaws.com/users_images/${username}/profile.jpg`;
+console.log(imageUrl);
+
 interface Product {
     productName: string;
     productId: string;
@@ -85,7 +93,7 @@ const ViewMenu: React.FC = () => {
             } catch (error) {
                 console.error('Error en la solicitud:', error);
             } finally {
-                setIsLoading(false); // Finalizar la carga al terminar la solicitud
+                setIsLoading(false);
             }
         };
 
@@ -108,7 +116,7 @@ const ViewMenu: React.FC = () => {
             } catch (error) {
                 console.error('Error en la solicitud:', error);
             } finally {
-                setIsLoading(false); // Finalizar la carga al terminar la solicitud
+                setIsLoading(false);
             }
         };
 
@@ -134,9 +142,8 @@ const ViewMenu: React.FC = () => {
 };
 
 function Header({ mode, toggleColorMode, user }: { mode: 'light' | 'dark'; toggleColorMode: () => void; user: User | null }) {
-    if (!user) return null; // No renderiza nada si no hay datos de usuario
+    if (!user) return null;
 
-    // Asegúrate de que socialMedia sea una cadena antes de dividirla
     const [instagram, facebook] = typeof user.socialMedia === 'string'
         ? user.socialMedia.split(',').map((url) => url.trim())
         : [null, null];
@@ -144,6 +151,12 @@ function Header({ mode, toggleColorMode, user }: { mode: 'light' | 'dark'; toggl
     return (
         <Card sx={{ mb: 4, bgcolor: 'background.paper', boxShadow: 'none', border: '1px solid', borderColor: 'primary.main', position: 'relative' }}>
             <CardContent>
+                <Box
+                    component="img"
+                    src={imageUrl}
+                    alt="Imagen del local"
+                    sx={{ width: '100%', height: 100, objectFit: 'cover', mb: 2, borderRadius: 1 }}
+                />
                 <IconButton
                     onClick={toggleColorMode}
                     color="primary"

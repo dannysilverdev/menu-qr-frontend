@@ -16,6 +16,7 @@ const Profile = () => {  // Componente renombrado como Profile
     const [error, setError] = useState('');
 
     const apiUrl = import.meta.env.VITE_API_URL;
+    console.log(apiUrl);
 
     useEffect(() => {
         const fetchUserProfile = async () => {
