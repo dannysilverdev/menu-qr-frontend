@@ -31,7 +31,7 @@ const s3_bucket = import.meta.env.VITE_BUCKET_NAME;
 const aws_region = import.meta.env.VITE_REGION;
 const username = localStorage.getItem('username');
 console.log(username);
-const imageUrl = `https://${s3_bucket}.s3.${aws_region}.amazonaws.com/users_images/${username}/profile.jpg`;
+const imageUrl = `https://${s3_bucket}.s3.${aws_region}.amazonaws.com/users_images/${username}/profile.png`;
 console.log(imageUrl);
 
 interface Product {
@@ -155,7 +155,7 @@ function Header({ mode, toggleColorMode, user }: { mode: 'light' | 'dark'; toggl
                     component="img"
                     src={imageUrl}
                     alt="Imagen del local"
-                    sx={{ width: '100%', height: 100, objectFit: 'cover', mb: 2, borderRadius: 1 }}
+                    sx={{ width: '100%', height: 150, objectFit: 'cover', mb: 2, borderRadius: 1 }}
                 />
                 <IconButton
                     onClick={toggleColorMode}
