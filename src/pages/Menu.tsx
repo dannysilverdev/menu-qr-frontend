@@ -191,6 +191,47 @@ const Menu = () => {
         );
     };
 
+    const handleDeleteProduct = async (productId: string, categoryId: string) => {
+        const confirmed = window.confirm('Are you sure you want to delete this product? This action cannot be undone.');
+
+        if (!confirmed) {
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/menu/category/${categoryId}/product/${productId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            if (response.ok) {
+                setCategories((prevCategories) =>
+                    prevCategories.map((category) => {
+                        if (category.SK === `CATEGORY#${categoryId}`) {
+                            return {
+                                ...category,
+                                products: category.products?.filter((product) => product.productId !== productId),
+                            };
+                        }
+                        return category;
+                    })
+                );
+                alert('Product deleted successfully!');
+            } else {
+                const errorData = await response.json();
+                alert(`Error: ${errorData.message}`);
+            }
+        } catch (error) {
+            console.error('Error deleting product:', error);
+            alert('Failed to delete product. Please try again.');
+        }
+    };
+
     const handleProductBlur = async (product: Product) => {
         const { productId, productName, price, description } = product;
 
@@ -285,6 +326,12 @@ const Menu = () => {
                                                             variant="standard"
                                                             sx={{ maxWidth: '30%' }}
                                                         />
+                                                        <IconButton
+                                                            onClick={() => handleDeleteProduct(product.productId, category.SK.split('#')[1])}
+                                                            color="error"
+                                                        >
+                                                            <DeleteIcon />
+                                                        </IconButton>
                                                     </Box>
                                                 </ListItem>
                                             </Paper>
@@ -294,6 +341,7 @@ const Menu = () => {
                             ))}
                         </List>
                     </Box>
+
                 </Paper>
 
                 {/* Modal para agregar producto */}

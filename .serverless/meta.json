@@ -1,7 +1,7 @@
 {
   "/home/dannysilver/menu-qr/frontend": {
     "versionSfCore": null,
-    "versionFramework": "4.4.9",
+    "versionFramework": "4.4.10",
     "isWithinCompose": false,
     "isCompose": false,
     "composeOrgName": null,
@@ -685,7 +685,7 @@
     "serviceProviderAwsCredentials": "<REDACTED>",
     "serviceProviderAwsAccountId": "207567761860",
     "projectType": "traditional",
-    "versionSf": "4.4.9",
+    "versionSf": "4.4.10",
     "serviceProviderAwsCfStackName": "menu-qr-frontend-local",
     "integrations": {},
     "serviceUniqueId": null,
