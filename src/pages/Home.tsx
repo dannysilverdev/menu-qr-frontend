@@ -51,8 +51,8 @@ const Home = () => {
                     padding: '1rem',
                     textAlign: 'center',
                 }}>
-                    <h1 style={{ margin: '0.5rem 0' }}>Menú QR</h1>
-                    <p style={{ margin: '0.5rem 0' }}>Escanea para ver el menú</p>
+                    {/*<h1 style={{ margin: '0.5rem 0' }}>Menú QR</h1>*/}
+                    <p style={{ margin: '0.5rem 0' }}>Escanea para acceder</p>
                     {username ? (
                         <QRCodeSVG
                             value={menuUrl}

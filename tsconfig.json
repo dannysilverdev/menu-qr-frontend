@@ -9,15 +9,30 @@
     }
   ],
   "compilerOptions": {
-    "baseUrl": ".",
+    "composite": true, // Obligatorio para proyectos referenciados
+    "noEmit": true, // Evita la salida de archivos de compilación
+    "baseUrl": ".", // Base de las rutas del proyecto
     "paths": {
       "@/*": [
         "src/*"
-      ],
-      "types": [
-        "vite/client",
-        "node"
-      ]
-    }
-  }
+      ] // Alias para la carpeta 'src'
+    },
+    "types": [
+      "vite/client",
+      "node"
+    ], // Tipos específicos incluidos
+    "moduleResolution": "node", // Resolución de módulos estilo Node.js
+    "target": "ESNext", // Target de salida moderno
+    "module": "ESNext", // Módulo de salida moderno
+    "jsx": "react-jsx", // Soporte para JSX en React
+    "strict": true // Habilita todas las comprobaciones estrictas de TypeScript
+  },
+  "include": [
+    "src",
+    "src/types"
+  ], // Incluye la carpeta 'src' en la compilación
+  "exclude": [
+    "node_modules",
+    "dist"
+  ] // Excluye 'node_modules' y la carpeta de salida
 }

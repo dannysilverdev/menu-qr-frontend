@@ -6,6 +6,7 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite --mode development-local",
+    "deploy:prod": "serverless client deploy --no-confirm && aws cloudfront create-invalidation --distribution-id EPTWUVR08J1G8 --paths '/*'",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -21,9 +22,10 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.11.1",
-    "@types/node": "^22.8.7",
-    "@types/react": "^18.3.11",
+    "@types/node": "^22.9.0",
+    "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "@types/react-easy-crop": "^1.16.0",
     "@vitejs/plugin-react-swc": "^3.5.0",
     "eslint": "^9.11.1",
     "eslint-plugin-react-hooks": "^5.1.0-rc.0",

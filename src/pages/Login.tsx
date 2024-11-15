@@ -15,6 +15,8 @@ const Login = () => {
     const apiUrl = import.meta.env.VITE_API_URL;
 
     useEffect(() => {
+        // Clearn Local Storage On Login
+        localStorage.removeItem('username');
         for (const key in import.meta.env) {
             console.log(`${key}: ${import.meta.env[key]}`);
         }
@@ -54,7 +56,7 @@ const Login = () => {
                     <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                         <QrCodeIcon sx={{ fontSize: 60, color: 'primary.main', mb: 2 }} />
                         <Typography variant="h4" component="h1" gutterBottom>
-                            Menu QR
+                            ACCESO QR
                         </Typography>
                         <form onSubmit={handleSubmit} style={{ width: '100%' }}>
                             <TextField

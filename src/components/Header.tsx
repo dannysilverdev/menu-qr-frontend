@@ -101,7 +101,7 @@ const Header = () => {
                         <MenuIcon />
                     </IconButton>
                     <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                        Menu QR
+                        ACCESO QR
                     </Typography>
                     {/* Enlaces visibles solo en modo desktop */}
                     <Box sx={{ display: { xs: 'none', md: 'flex' } }}>

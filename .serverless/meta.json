@@ -1,7 +1,7 @@
 {
   "/home/dannysilver/menu-qr/frontend": {
     "versionSfCore": null,
-    "versionFramework": "4.4.7",
+    "versionFramework": "4.4.9",
     "isWithinCompose": false,
     "isCompose": false,
     "composeOrgName": null,
@@ -336,6 +336,172 @@
           "_credentialsPromise": "<REDACTED>"
         },
         "resolvers": {}
+      },
+      "sls": {
+        "instance": {
+          "credentials": "<REDACTED>",
+          "serviceConfigFile": {
+            "service": "menu-qr-frontend",
+            "provider": {
+              "name": "aws",
+              "runtime": "nodejs18.x",
+              "region": "us-east-1",
+              "stage": "local",
+              "versionFunctions": true
+            },
+            "plugins": [
+              "serverless-finch",
+              "serverless-cloudfront-invalidate",
+              "serverless-domain-manager"
+            ],
+            "package": {
+              "individually": true,
+              "exclude": [
+                "node_modules/aws-sdk/**",
+                ".git/**",
+                ".vscode/**",
+                "tests/**",
+                "docs/**"
+              ],
+              "artifactsS3KeyDirname": "serverless/menu-qr-frontend/local/code-artifacts"
+            },
+            "custom": {
+              "customDomain": {
+                "domainName": "dljrvybt2jogj.cloudfront.net",
+                "basePath": "",
+                "stage": "local",
+                "createRoute53Record": true,
+                "endpointType": "regional",
+                "securityPolicy": "tls_1_2",
+                "allowPathMatching": true
+              },
+              "invalidateCloudfrontCache": {
+                "paths": [
+                  "/*"
+                ]
+              },
+              "client": {
+                "bucketName": "menu-qr-frontend",
+                "distributionFolder": "dist",
+                "region": "us-east-1",
+                "distributionIdKey": "EPTWUVR08J1G8",
+                "acl": "public-read",
+                "indexDocument": "index.html",
+                "errorDocument": "index.html",
+                "websiteConfiguration": {
+                  "indexDocument": "index.html",
+                  "errorDocument": "index.html"
+                }
+              }
+            },
+            "resources": {
+              "Resources": {
+                "StaticWebsiteBucket": {
+                  "Type": "AWS::S3::Bucket",
+                  "Properties": {
+                    "BucketName": "menu-qr-frontend",
+                    "PublicAccessBlockConfiguration": {
+                      "BlockPublicAcls": false,
+                      "BlockPublicPolicy": false,
+                      "IgnorePublicAcls": false,
+                      "RestrictPublicBuckets": false
+                    }
+                  }
+                },
+                "CloudFrontDistribution": {
+                  "Type": "AWS::CloudFront::Distribution",
+                  "Properties": {
+                    "DistributionConfig": {
+                      "Origins": [
+                        {
+                          "DomainName": {
+                            "Fn::GetAtt": [
+                              "StaticWebsiteBucket",
+                              "DomainName"
+                            ]
+                          },
+                          "Id": "S3-MenuQr",
+                          "S3OriginConfig": {
+                            "OriginAccessIdentity": {
+                              "Fn::Sub": "origin-access-identity/cloudfront/${AWS::Region}"
+                            }
+                          }
+                        }
+                      ],
+                      "Enabled": true,
+                      "DefaultRootObject": "index.html",
+                      "DefaultCacheBehavior": {
+                        "TargetOriginId": "S3-MenuQr",
+                        "ViewerProtocolPolicy": "redirect-to-https",
+                        "AllowedMethods": [
+                          "GET",
+                          "HEAD"
+                        ],
+                        "CachedMethods": [
+                          "GET",
+                          "HEAD"
+                        ],
+                        "ForwardedValues": {
+                          "QueryString": false,
+                          "Cookies": {
+                            "Forward": "none"
+                          }
+                        },
+                        "MinTTL": 300
+                      },
+                      "ErrorResponses": [
+                        {
+                          "ErrorCode": 404,
+                          "ResponsePagePath": "/index.html",
+                          "ResponseCode": 200
+                        },
+                        {
+                          "ErrorCode": 403,
+                          "ResponsePagePath": "/index.html",
+                          "ResponseCode": 200
+                        }
+                      ]
+                    }
+                  }
+                },
+                "StaticWebsiteBucketPolicy": {
+                  "Type": "AWS::S3::BucketPolicy",
+                  "Properties": {
+                    "Bucket": {
+                      "Ref": "StaticWebsiteBucket"
+                    },
+                    "PolicyDocument": {
+                      "Statement": [
+                        {
+                          "Effect": "Allow",
+                          "Principal": "*",
+                          "Action": "s3:GetObject",
+                          "Resource": "arn:aws:s3:::menu-qr-frontend/*"
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "configFileDirPath": "/home/dannysilver/menu-qr/frontend",
+          "config": {
+            "type": "sls"
+          },
+          "options": {
+            "confirm": false
+          },
+          "stage": "local",
+          "dashboard": null,
+          "logger": {
+            "namespace": "s:core:resolver:sls",
+            "prefix": null,
+            "prefixColor": null
+          },
+          "_credentialsPromise": "<REDACTED>"
+        },
+        "resolvers": {}
       }
     },
     "composeServiceName": null,
@@ -519,7 +685,7 @@
     "serviceProviderAwsCredentials": "<REDACTED>",
     "serviceProviderAwsAccountId": "207567761860",
     "projectType": "traditional",
-    "versionSf": "4.4.7",
+    "versionSf": "4.4.9",
     "serviceProviderAwsCfStackName": "menu-qr-frontend-local",
     "integrations": {},
     "serviceUniqueId": null,

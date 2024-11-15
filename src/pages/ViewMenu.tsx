@@ -26,13 +26,8 @@ import FacebookIcon from '@mui/icons-material/Facebook';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 
-//import imagen from '../assets/imagen.jpg'; // Importa la imagen 
-const s3_bucket = import.meta.env.VITE_BUCKET_NAME;
-const aws_region = import.meta.env.VITE_REGION;
 const username = localStorage.getItem('username');
-console.log(username);
-const imageUrl = `https://${s3_bucket}.s3.${aws_region}.amazonaws.com/users_images/${username}/profile.png`;
-console.log(imageUrl);
+console.log(`Usuario: ${username}`);
 
 interface Product {
     productName: string;
@@ -52,6 +47,7 @@ interface User {
     phoneNumber: string;
     description: string;
     socialMedia: string;
+    imageUrl: string;
 }
 
 const ViewMenu: React.FC = () => {
@@ -109,6 +105,7 @@ const ViewMenu: React.FC = () => {
                         phoneNumber: data.phoneNumber,
                         description: data.description,
                         socialMedia: data.socialMedia,
+                        imageUrl: data.imageUrl || '', // Asegúrate de traer la URL de la imagen más reciente
                     });
                 } else {
                     console.error('Error al obtener la información del usuario');
@@ -144,6 +141,8 @@ const ViewMenu: React.FC = () => {
 function Header({ mode, toggleColorMode, user }: { mode: 'light' | 'dark'; toggleColorMode: () => void; user: User | null }) {
     if (!user) return null;
 
+    const [imageError, setImageError] = useState(false);
+
     const [instagram, facebook] = typeof user.socialMedia === 'string'
         ? user.socialMedia.split(',').map((url) => url.trim())
         : [null, null];
@@ -151,12 +150,34 @@ function Header({ mode, toggleColorMode, user }: { mode: 'light' | 'dark'; toggl
     return (
         <Card sx={{ mb: 4, bgcolor: 'background.paper', boxShadow: 'none', border: '1px solid', borderColor: 'primary.main', position: 'relative' }}>
             <CardContent>
-                <Box
-                    component="img"
-                    src={imageUrl}
-                    alt="Imagen del local"
-                    sx={{ width: '100%', height: 150, objectFit: 'cover', mb: 2, borderRadius: 1 }}
-                />
+                {imageError ? (
+                    <Box
+                        sx={{
+                            width: '100%',
+                            height: 150,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            borderRadius: 1,
+                            backgroundColor: 'grey.200',
+                        }}
+                    >
+                        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14.5h2V18h-2v-1.5zm2.07-7.75-.9.92c-.29.29-.44.68-.44 1.09V13h2v-1.5h.5c.41 0 .75-.34.75-.75s-.34-.75-.75-.75h-1l.9-.92c.29-.29.44-.68.44-1.09 0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5h2c0-.41.34-.75.75-.75s.75.34.75.75-.34.75-.75.75h-1z" fill="currentColor" />
+                        </svg>
+                        <Typography variant="subtitle1" sx={{ ml: 1 }}>
+                            No hay imagen disponible
+                        </Typography>
+                    </Box>
+                ) : (
+                    <Box
+                        component="img"
+                        src={`${user.imageUrl}?${new Date().getTime()}`} // Usa la URL del campo imageUrl del usuario y añade un timestamp
+                        alt="Imagen del local"
+                        onError={() => setImageError(true)}
+                        sx={{ width: '100%', height: 150, objectFit: 'cover', mb: 2, borderRadius: 1 }}
+                    />
+                )}
                 <IconButton
                     onClick={toggleColorMode}
                     color="primary"
