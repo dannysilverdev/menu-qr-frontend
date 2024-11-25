@@ -3,9 +3,18 @@ import React, { useState } from 'react';
 import { TextField, Button, Box, Typography } from '@mui/material';
 import { Add as AddIcon } from '@mui/icons-material';
 
+interface NewProduct {
+    productName: string;
+    price: number;
+    description: string;
+    productId: string;
+    createdAt: string;
+    isActive: boolean;
+}
+
 interface ProductFormProps {
     categoryId: string;
-    onProductCreated: (product: { productName: string; price: number; description: string; productId: string; createdAt: string }) => void;
+    onProductCreated: (product: NewProduct) => void;
 }
 
 const ProductForm: React.FC<ProductFormProps> = ({ categoryId, onProductCreated }) => {
@@ -28,12 +37,22 @@ const ProductForm: React.FC<ProductFormProps> = ({ categoryId, onProductCreated 
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 },
-                body: JSON.stringify({ productName, price, description }),
+                body: JSON.stringify({
+                    productName,
+                    price,
+                    description,
+                    isActive: true // Agregamos isActive al crear el producto
+                }),
             });
 
             if (response.ok) {
                 const data = await response.json();
-                onProductCreated(data.product);
+                // Aseguramos que el producto tenga todos los campos necesarios
+                const newProduct: NewProduct = {
+                    ...data.product,
+                    isActive: true // Aseguramos que isActive esté presente
+                };
+                onProductCreated(newProduct);
                 setProductName('');
                 setPrice('');
                 setDescription('');

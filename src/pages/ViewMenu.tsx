@@ -34,6 +34,7 @@ interface Product {
     productId: string;
     price: number;
     description: string;
+    status: boolean;
 }
 
 interface Category {
@@ -82,7 +83,19 @@ const ViewMenu: React.FC = () => {
                 const response = await fetch(`${apiUrl}/view-menu/${userId}`);
                 if (response.ok) {
                     const data = await response.json();
-                    setCategories(data.categories || []);
+                    console.log('Datos originales:', data);
+
+                    // Procesar las categorías y productos
+                    const categories: Category[] = data.categories.map((category: Category) => ({
+                        ...category,
+                        products: category.products?.filter(product => product.status)
+                    }));
+
+                    // Filtrar categorías sin productos activos
+                    const validCategories = categories.filter(category => category.products?.length);
+
+                    console.log('Categorías válidas:', validCategories);
+                    setCategories(validCategories);
                 } else {
                     console.error('Error al obtener las categorías');
                 }
@@ -172,7 +185,7 @@ function Header({ mode, toggleColorMode, user }: { mode: 'light' | 'dark'; toggl
                 ) : (
                     <Box
                         component="img"
-                        src={`${user.imageUrl}?${new Date().getTime()}`} // Usa la URL del campo imageUrl del usuario y añade un timestamp
+                        src={`${user.imageUrl}?${new Date().getTime()}`}
                         alt="Imagen del local"
                         onError={() => setImageError(true)}
                         sx={{ width: '100%', height: 150, objectFit: 'cover', mb: 2, borderRadius: 1 }}
@@ -225,14 +238,16 @@ function Categories({ categories }: { categories: Category[] }) {
                                 <ListItem key={productIndex} disableGutters>
                                     <ListItemText
                                         primary={
-                                            <Typography variant="subtitle1">
-                                                {product.productName}
-                                                <Typography component="span" variant="body2" sx={{ float: 'right' }}>
+                                            <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
+                                                <Typography variant="subtitle1" align="justify" sx={{ width: '80%' }}>
+                                                    {product.productName}
+                                                </Typography>
+                                                <Typography variant="body2" sx={{ textAlign: 'right' }}>
                                                     ${product.price.toFixed(2)}
                                                 </Typography>
-                                            </Typography>
+                                            </Box>
                                         }
-                                        secondary={<Typography variant="body2" color="text.secondary">{product.description}</Typography>}
+                                        secondary={<Typography variant="body2" color="text.secondary" align="justify" sx={{ width: '80%' }}>{product.description}</Typography>}
                                     />
                                 </ListItem>
                             ))}

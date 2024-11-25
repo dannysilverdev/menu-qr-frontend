@@ -11,7 +11,7 @@ import {
     useTheme,
     Paper
 } from '@mui/material';
-import { Delete as DeleteIcon, Add as AddIcon } from '@mui/icons-material';
+import { Delete as DeleteIcon, Add as AddIcon, ToggleOn as ToggleOnIcon, ToggleOff as ToggleOffIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import CategoryForm from '../components/CategoryForm';
@@ -24,7 +24,9 @@ interface Product {
     productId: string;
     createdAt: string;
     categoryId: string;
+    isActive: boolean;
 }
+
 
 interface Category {
     categoryName: string;
@@ -33,7 +35,6 @@ interface Category {
 }
 
 const Menu = () => {
-    //const [message, setMessage] = useState<string>('');  
     const [userId, setUserId] = useState<string>('');
     const [categories, setCategories] = useState<Category[]>([]);
     const [openProductForm, setOpenProductForm] = useState<{ open: boolean; categoryId: string | null }>({ open: false, categoryId: null });
@@ -59,7 +60,6 @@ const Menu = () => {
 
                 if (response.ok) {
                     const data = await response.json();
-                    //message setMessage(data.message || 'Welcome to the Menu!');
                     setUserId(data.userId || '');
 
                     const categoriesResponse = await fetch(`${apiUrl}/categories/${data.userId}`, {
@@ -87,6 +87,41 @@ const Menu = () => {
 
         fetchData();
     }, [navigate]);
+
+    const handleToggleProductStatus = async (product: Product) => {
+        try {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/menu/product/${product.productId}/update`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                },
+                body: JSON.stringify({
+                    productName: product.productName,
+                    price: product.price,
+                    description: product.description,
+                    isActive: !product.isActive
+                }),
+            });
+
+            if (response.ok) {
+                setCategories((prevCategories) =>
+                    prevCategories.map((category) => ({
+                        ...category,
+                        products: category.products?.map((p) =>
+                            p.productId === product.productId
+                                ? { ...p, isActive: !p.isActive }
+                                : p
+                        ),
+                    }))
+                );
+            } else {
+                console.error('Failed to update product status');
+            }
+        } catch (error) {
+            console.error('Error updating product status:', error);
+        }
+    };
 
     const handleCategoryCreated = (category: { categoryName: string; SK: string }) => {
         alert(`Category ${category.categoryName} created successfully!`);
@@ -126,7 +161,10 @@ const Menu = () => {
 
     const handleProductCreated = (product: Omit<Product, 'categoryId'>, categoryId: string) => {
         alert(`Product ${product.productName} created successfully!`);
-        const newProduct = { ...product, categoryId };
+        const newProduct: Product = {
+            ...product,
+            categoryId,
+        };
 
         setCategories((prevCategories) =>
             prevCategories.map((category) => {
@@ -233,7 +271,7 @@ const Menu = () => {
     };
 
     const handleProductBlur = async (product: Product) => {
-        const { productId, productName, price, description } = product;
+        const { productId, productName, price, description, isActive } = product;
 
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/menu/product/${productId}/update`, {
@@ -242,7 +280,7 @@ const Menu = () => {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`,
                 },
-                body: JSON.stringify({ productName, price, description }),
+                body: JSON.stringify({ productName, price, description, isActive }),
             });
 
             if (!response.ok) {
@@ -258,15 +296,8 @@ const Menu = () => {
             <Header />
             <Container maxWidth="sm">
                 <Paper elevation={3} sx={{ p: 3, mt: 2 }}>
-                    {/* Encabezado del mensaje */}
-                    {/*<Typography variant="h5" component="h1" gutterBottom align="center" sx={{ color: theme.palette.primary.main }}>
-                {message}
-            </Typography>*/}
-
-                    {/* Formulario para agregar categoría */}
                     <CategoryForm userId={userId} onCategoryCreated={handleCategoryCreated} />
 
-                    {/* Listado de categorías y productos */}
                     <Box sx={{ mt: 4 }}>
                         <Typography variant="h6" component="h2" gutterBottom>
                             Categorías
@@ -274,7 +305,6 @@ const Menu = () => {
                         <List>
                             {categories.map((category, index) => (
                                 <Paper key={category.SK} elevation={2} sx={{ mb: 2, p: 2 }}>
-                                    {/* Categoría */}
                                     <ListItem sx={{ display: 'flex', alignItems: 'center', p: 0 }}>
                                         <TextField
                                             value={category.categoryName}
@@ -292,12 +322,18 @@ const Menu = () => {
                                         </IconButton>
                                     </ListItem>
 
-                                    {/* Lista de productos */}
                                     <List sx={{ mt: 1, pl: 2 }}>
                                         {category.products?.map((product) => (
-                                            <Paper key={product.productId} elevation={1} sx={{ mb: 1, p: 2 }}>
+                                            <Paper
+                                                key={product.productId}
+                                                elevation={1}
+                                                sx={{
+                                                    mb: 1,
+                                                    p: 2,
+                                                    opacity: product.isActive ? 1 : 0.5
+                                                }}
+                                            >
                                                 <ListItem sx={{ display: 'flex', flexDirection: 'column', py: 1 }}>
-                                                    {/* Nombre del producto */}
                                                     <TextField
                                                         label="Name"
                                                         value={product.productName}
@@ -307,7 +343,6 @@ const Menu = () => {
                                                         variant="standard"
                                                         sx={{ mb: 1 }}
                                                     />
-                                                    {/* Descripción y precio en una sola línea */}
                                                     <Box sx={{ display: 'flex', width: '100%', gap: 2 }}>
                                                         <TextField
                                                             label="Description"
@@ -327,6 +362,13 @@ const Menu = () => {
                                                             sx={{ maxWidth: '30%' }}
                                                         />
                                                         <IconButton
+                                                            onClick={() => handleToggleProductStatus(product)}
+                                                            color={product.isActive ? "primary" : "default"}
+                                                            sx={{ ml: 1 }}
+                                                        >
+                                                            {product.isActive ? <ToggleOnIcon /> : <ToggleOffIcon />}
+                                                        </IconButton>
+                                                        <IconButton
                                                             onClick={() => handleDeleteProduct(product.productId, category.SK.split('#')[1])}
                                                             color="error"
                                                         >
@@ -341,10 +383,8 @@ const Menu = () => {
                             ))}
                         </List>
                     </Box>
-
                 </Paper>
 
-                {/* Modal para agregar producto */}
                 <Modal
                     open={openProductForm.open}
                     onClose={closeProductModal}
@@ -363,7 +403,6 @@ const Menu = () => {
                 </Modal>
             </Container>
         </>
-
     );
 };
 
