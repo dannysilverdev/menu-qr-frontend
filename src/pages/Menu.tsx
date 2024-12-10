@@ -416,17 +416,18 @@ const Menu = () => {
                                                         onBlur={() => handleProductBlur(product)}
                                                         fullWidth
                                                         variant="standard"
-                                                        sx={{ mb: 1 }}
+                                                        sx={{ mb: 2 }} // Espaciado entre el nombre y la descripción
+                                                    />
+                                                    <TextField
+                                                        label="Description"
+                                                        value={product.description}
+                                                        onChange={(e) => handleProductChange(product.productId, 'description', e.target.value)}
+                                                        onBlur={() => handleProductBlur(product)}
+                                                        fullWidth
+                                                        variant="standard"
+                                                        sx={{ mb: 2 }} // Espaciado entre la descripción y el resto de los campos
                                                     />
                                                     <Box sx={{ display: 'flex', width: '100%', gap: 2 }}>
-                                                        <TextField
-                                                            label="Description"
-                                                            value={product.description}
-                                                            onChange={(e) => handleProductChange(product.productId, 'description', e.target.value)}
-                                                            onBlur={() => handleProductBlur(product)}
-                                                            fullWidth
-                                                            variant="standard"
-                                                        />
                                                         <TextField
                                                             label="Price"
                                                             type="number"
@@ -451,6 +452,8 @@ const Menu = () => {
                                                         </IconButton>
                                                     </Box>
                                                 </ListItem>
+
+
                                             </Paper>
                                         ))}
                                     </List>
