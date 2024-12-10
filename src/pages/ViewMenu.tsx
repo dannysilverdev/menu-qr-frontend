@@ -35,6 +35,7 @@ interface Product {
     price: number;
     description: string;
     status: boolean;
+    order: number; // Nuevo atributo para el orden
 }
 
 interface Category {
@@ -83,18 +84,20 @@ const ViewMenu: React.FC = () => {
                 const response = await fetch(`${apiUrl}/view-menu/${userId}`);
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('Datos originales:', data);
 
-                    // Procesar las categorías y productos
+                    // Verifica la respuesta completa
+                    console.log('Respuesta completa del backend:', data);
+
                     const categories: Category[] = data.categories.map((category: Category) => ({
                         ...category,
-                        products: category.products?.filter(product => product.status)
+                        products: category.products
+                            ?.filter(product => product.status)
+                            .sort((a, b) => a.order - b.order), // Ordena por atributo `order`
                     }));
 
-                    // Filtrar categorías sin productos activos
                     const validCategories = categories.filter(category => category.products?.length);
 
-                    console.log('Categorías válidas:', validCategories);
+                    console.log('Categorías procesadas:', validCategories);
                     setCategories(validCategories);
                 } else {
                     console.error('Error al obtener las categorías');
@@ -105,6 +108,8 @@ const ViewMenu: React.FC = () => {
                 setIsLoading(false);
             }
         };
+
+
 
         const fetchUser = async () => {
             if (!userId) return;
@@ -243,7 +248,7 @@ function Categories({ categories }: { categories: Category[] }) {
                                                     {product.productName}
                                                 </Typography>
                                                 <Typography variant="body2" sx={{ textAlign: 'right' }}>
-                                                    ${product.price.toFixed(2)}
+                                                    ${product.price.toFixed(0)}
                                                 </Typography>
                                             </Box>
                                         }

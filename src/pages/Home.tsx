@@ -40,18 +40,17 @@ const Home = () => {
     }, [navigate]);
 
     return (
-        <>
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
             <Header />
-            <Container maxWidth="sm">
+            <Container maxWidth="sm" style={{ marginTop: '64px' }}> {/* Agregamos margen superior para el header */}
                 <div style={{
                     display: 'flex',
                     flexDirection: 'column',
                     alignItems: 'center',
-                    height: '100vh',
+                    height: 'calc(100vh - 64px)', // Ajustamos la altura restando el header
                     padding: '1rem',
                     textAlign: 'center',
                 }}>
-                    {/*<h1 style={{ margin: '0.5rem 0' }}>Menú QR</h1>*/}
                     <p style={{ margin: '0.5rem 0' }}>Escanea para acceder</p>
                     {username ? (
                         <QRCodeSVG
@@ -63,7 +62,7 @@ const Home = () => {
                     )}
                 </div>
             </Container>
-        </>
+        </div>
     );
 };
 

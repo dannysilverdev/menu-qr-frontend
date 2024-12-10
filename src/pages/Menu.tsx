@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
+import Sortable from 'sortablejs';
 import {
     Container,
     Typography,
@@ -25,6 +26,7 @@ interface Product {
     createdAt: string;
     categoryId: string;
     isActive: boolean;
+    order: number;
 }
 
 
@@ -40,6 +42,8 @@ const Menu = () => {
     const [openProductForm, setOpenProductForm] = useState<{ open: boolean; categoryId: string | null }>({ open: false, categoryId: null });
     const navigate = useNavigate();
     const theme = useTheme();
+    const sortableRefs = useRef<Sortable[]>([]); // Referencias de Sortable
+
 
     useEffect(() => {
         const fetchData = async () => {
@@ -68,7 +72,20 @@ const Menu = () => {
 
                     if (categoriesResponse.ok) {
                         const categoriesData = await categoriesResponse.json();
-                        setCategories(categoriesData.categories || []);
+
+                        // Log para depuración
+                        console.log('Productos antes de procesar:', categoriesData.categories);
+
+                        // Ordena los productos por el atributo `order`
+                        const sortedCategories = categoriesData.categories.map((category: Category) => ({
+                            ...category,
+                            products: category.products?.sort((a, b) => a.order - b.order),
+                        }));
+
+                        // Log para verificar el orden
+                        console.log('Categorías ordenadas:', sortedCategories);
+
+                        setCategories(sortedCategories);
                     } else {
                         console.error('Failed to fetch categories');
                     }
@@ -87,6 +104,57 @@ const Menu = () => {
 
         fetchData();
     }, [navigate]);
+
+
+    useEffect(() => {
+        categories.forEach((category, index) => {
+            const listElement = document.getElementById(`product-list-${index}`);
+            if (listElement) {
+                const sortable = Sortable.create(listElement, {
+                    animation: 150,
+                    onEnd: async (evt) => {
+                        if (evt.oldIndex === undefined || evt.newIndex === undefined) {
+                            console.error('Invalid index received from SortableJS');
+                            return;
+                        }
+
+                        const reorderedProducts = [...(category.products || [])];
+                        const [movedItem] = reorderedProducts.splice(evt.oldIndex, 1);
+                        reorderedProducts.splice(evt.newIndex, 0, movedItem);
+
+                        setCategories((prevCategories) =>
+                            prevCategories.map((cat, i) =>
+                                i === index ? { ...cat, products: reorderedProducts } : cat
+                            )
+                        );
+
+                        await fetch(`${import.meta.env.VITE_API_URL}/menu/category/${category.SK.split('#')[1]}/reorder`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                Authorization: `Bearer ${localStorage.getItem('token')}`,
+                            },
+                            body: JSON.stringify({
+                                products: reorderedProducts.map((product, idx) => ({
+                                    productId: product.productId,
+                                    order: idx + 1,
+                                })),
+                            }),
+                        });
+                    },
+                });
+
+                sortableRefs.current[index] = sortable;
+            }
+        });
+
+        return () => {
+            // Limpia instancias de Sortable al desmontar
+            sortableRefs.current.forEach((sortable) => sortable.destroy());
+            sortableRefs.current = [];
+        };
+    }, [categories]);
+
 
     const handleToggleProductStatus = async (product: Product) => {
         try {
@@ -159,11 +227,17 @@ const Menu = () => {
         }
     };
 
-    const handleProductCreated = (product: Omit<Product, 'categoryId'>, categoryId: string) => {
+    const handleProductCreated = (product: Omit<Product, 'categoryId' | 'order'>, categoryId: string) => {
         alert(`Product ${product.productName} created successfully!`);
+
+        // Calcula el nuevo orden
+        const category = categories.find((cat) => cat.SK === `CATEGORY#${categoryId}`);
+        const newOrder = (category?.products?.length || 0) + 1;
+
         const newProduct: Product = {
             ...product,
             categoryId,
+            order: newOrder, // Asigna el nuevo orden
         };
 
         setCategories((prevCategories) =>
@@ -181,6 +255,7 @@ const Menu = () => {
             })
         );
     };
+
 
     const openProductModal = (categoryId: string) => {
         setOpenProductForm({ open: true, categoryId });
@@ -322,7 +397,7 @@ const Menu = () => {
                                         </IconButton>
                                     </ListItem>
 
-                                    <List sx={{ mt: 1, pl: 2 }}>
+                                    <List id={`product-list-${index}`} sx={{ mt: 1, pl: 2 }}>
                                         {category.products?.map((product) => (
                                             <Paper
                                                 key={product.productId}
