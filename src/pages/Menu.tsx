@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import Sortable from 'sortablejs';
 import {
     Container,
@@ -10,9 +10,19 @@ import {
     Modal,
     TextField,
     useTheme,
-    Paper
+    Paper,
+    Accordion,
+    AccordionSummary,
+    AccordionDetails,
+    Button,
 } from '@mui/material';
-import { Delete as DeleteIcon, Add as AddIcon, ToggleOn as ToggleOnIcon, ToggleOff as ToggleOffIcon } from '@mui/icons-material';
+import {
+    Delete as DeleteIcon,
+    Add as AddIcon,
+    ToggleOn as ToggleOnIcon,
+    ToggleOff as ToggleOffIcon,
+    ExpandMore as ExpandMoreIcon,
+} from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import Header from '../components/Header';
 import CategoryForm from '../components/CategoryForm';
@@ -29,21 +39,19 @@ interface Product {
     order: number;
 }
 
-
 interface Category {
     categoryName: string;
     SK: string;
     products?: Product[];
 }
 
-const Menu = () => {
+const Menu: React.FC = () => {
     const [userId, setUserId] = useState<string>('');
     const [categories, setCategories] = useState<Category[]>([]);
     const [openProductForm, setOpenProductForm] = useState<{ open: boolean; categoryId: string | null }>({ open: false, categoryId: null });
     const navigate = useNavigate();
     const theme = useTheme();
-    const sortableRefs = useRef<Sortable[]>([]); // Referencias de Sortable
-
+    const sortableRefs = useRef<Sortable[]>([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -72,19 +80,10 @@ const Menu = () => {
 
                     if (categoriesResponse.ok) {
                         const categoriesData = await categoriesResponse.json();
-
-                        // Log para depuración
-                        console.log('Productos antes de procesar:', categoriesData.categories);
-
-                        // Ordena los productos por el atributo `order`
                         const sortedCategories = categoriesData.categories.map((category: Category) => ({
                             ...category,
-                            products: category.products?.sort((a, b) => a.order - b.order),
+                            products: category.products?.sort((a: Product, b: Product) => a.order - b.order),
                         }));
-
-                        // Log para verificar el orden
-                        console.log('Categorías ordenadas:', sortedCategories);
-
                         setCategories(sortedCategories);
                     } else {
                         console.error('Failed to fetch categories');
@@ -104,7 +103,6 @@ const Menu = () => {
 
         fetchData();
     }, [navigate]);
-
 
     useEffect(() => {
         categories.forEach((category, index) => {
@@ -149,12 +147,10 @@ const Menu = () => {
         });
 
         return () => {
-            // Limpia instancias de Sortable al desmontar
             sortableRefs.current.forEach((sortable) => sortable.destroy());
             sortableRefs.current = [];
         };
     }, [categories]);
-
 
     const handleToggleProductStatus = async (product: Product) => {
         try {
@@ -230,14 +226,13 @@ const Menu = () => {
     const handleProductCreated = (product: Omit<Product, 'categoryId' | 'order'>, categoryId: string) => {
         alert(`Product ${product.productName} created successfully!`);
 
-        // Calcula el nuevo orden
         const category = categories.find((cat) => cat.SK === `CATEGORY#${categoryId}`);
         const newOrder = (category?.products?.length || 0) + 1;
 
         const newProduct: Product = {
             ...product,
             categoryId,
-            order: newOrder, // Asigna el nuevo orden
+            order: newOrder,
         };
 
         setCategories((prevCategories) =>
@@ -255,7 +250,6 @@ const Menu = () => {
             })
         );
     };
-
 
     const openProductModal = (categoryId: string) => {
         setOpenProductForm({ open: true, categoryId });
@@ -379,8 +373,12 @@ const Menu = () => {
                         </Typography>
                         <List>
                             {categories.map((category, index) => (
-                                <Paper key={category.SK} elevation={2} sx={{ mb: 2, p: 2 }}>
-                                    <ListItem sx={{ display: 'flex', alignItems: 'center', p: 0 }}>
+                                <Accordion key={category.SK} sx={{ mb: 2 }}>
+                                    <AccordionSummary
+                                        expandIcon={<ExpandMoreIcon />}
+                                        aria-controls={`category-${index}-content`}
+                                        id={`category-${index}-header`}
+                                    >
                                         <TextField
                                             value={category.categoryName}
                                             onChange={(e) => handleCategoryNameChange(index, e.target.value)}
@@ -389,75 +387,88 @@ const Menu = () => {
                                             fullWidth
                                             sx={{ fontWeight: 'bold', color: theme.palette.primary.main }}
                                         />
-                                        <IconButton onClick={() => handleDeleteCategory(category.SK.split('#')[1])} color="error">
-                                            <DeleteIcon />
-                                        </IconButton>
-                                        <IconButton onClick={() => openProductModal(category.SK.split('#')[1])} color="primary">
-                                            <AddIcon />
-                                        </IconButton>
-                                    </ListItem>
-
-                                    <List id={`product-list-${index}`} sx={{ mt: 1, pl: 2 }}>
-                                        {category.products?.map((product) => (
-                                            <Paper
-                                                key={product.productId}
-                                                elevation={1}
-                                                sx={{
-                                                    mb: 1,
-                                                    p: 2,
-                                                    opacity: product.isActive ? 1 : 0.5
-                                                }}
+                                    </AccordionSummary>
+                                    <AccordionDetails>
+                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
+                                            <Button
+                                                startIcon={<DeleteIcon />}
+                                                onClick={() => handleDeleteCategory(category.SK.split('#')[1])}
+                                                color="error"
+                                                variant="outlined"
                                             >
-                                                <ListItem sx={{ display: 'flex', flexDirection: 'column', py: 1 }}>
-                                                    <TextField
-                                                        label="Name"
-                                                        value={product.productName}
-                                                        onChange={(e) => handleProductChange(product.productId, 'productName', e.target.value)}
-                                                        onBlur={() => handleProductBlur(product)}
-                                                        fullWidth
-                                                        variant="standard"
-                                                        sx={{ mb: 2 }} // Espaciado entre el nombre y la descripción
-                                                    />
-                                                    <TextField
-                                                        label="Description"
-                                                        value={product.description}
-                                                        onChange={(e) => handleProductChange(product.productId, 'description', e.target.value)}
-                                                        onBlur={() => handleProductBlur(product)}
-                                                        fullWidth
-                                                        variant="standard"
-                                                        sx={{ mb: 2 }} // Espaciado entre la descripción y el resto de los campos
-                                                    />
-                                                    <Box sx={{ display: 'flex', width: '100%', gap: 2 }}>
+                                                Eliminar
+                                            </Button>
+                                            <Button
+                                                startIcon={<AddIcon />}
+                                                onClick={() => openProductModal(category.SK.split('#')[1])}
+                                                color="primary"
+                                                variant="contained"
+                                            >
+                                                Producto
+                                            </Button>
+                                        </Box>
+                                        <List id={`product-list-${index}`}>
+                                            {category.products?.map((product) => (
+                                                <Paper
+                                                    key={product.productId}
+                                                    elevation={1}
+                                                    sx={{
+                                                        mb: 2,
+                                                        p: 2,
+                                                        opacity: product.isActive ? 1 : 0.5
+                                                    }}
+                                                >
+                                                    <ListItem sx={{ display: 'flex', flexDirection: 'column', py: 1 }}>
                                                         <TextField
-                                                            label="Price"
-                                                            type="number"
-                                                            value={product.price}
-                                                            onChange={(e) => handleProductChange(product.productId, 'price', parseFloat(e.target.value))}
+                                                            label="Name"
+                                                            value={product.productName}
+                                                            onChange={(e) => handleProductChange(product.productId, 'productName', e.target.value)}
                                                             onBlur={() => handleProductBlur(product)}
-                                                            variant="standard"
-                                                            sx={{ maxWidth: '30%' }}
+                                                            fullWidth
+                                                            variant="outlined"
+                                                            sx={{ mb: 2 }}
                                                         />
-                                                        <IconButton
-                                                            onClick={() => handleToggleProductStatus(product)}
-                                                            color={product.isActive ? "primary" : "default"}
-                                                            sx={{ ml: 1 }}
-                                                        >
-                                                            {product.isActive ? <ToggleOnIcon /> : <ToggleOffIcon />}
-                                                        </IconButton>
-                                                        <IconButton
-                                                            onClick={() => handleDeleteProduct(product.productId, category.SK.split('#')[1])}
-                                                            color="error"
-                                                        >
-                                                            <DeleteIcon />
-                                                        </IconButton>
-                                                    </Box>
-                                                </ListItem>
-
-
-                                            </Paper>
-                                        ))}
-                                    </List>
-                                </Paper>
+                                                        <TextField
+                                                            label="Description"
+                                                            value={product.description}
+                                                            onChange={(e) => handleProductChange(product.productId, 'description', e.target.value)}
+                                                            onBlur={() => handleProductBlur(product)}
+                                                            fullWidth
+                                                            multiline
+                                                            rows={3}
+                                                            variant="outlined"
+                                                            sx={{ mb: 2 }}
+                                                        />
+                                                        <Box sx={{ display: 'flex', width: '100%', gap: 2, alignItems: 'center' }}>
+                                                            <TextField
+                                                                label="Price"
+                                                                type="number"
+                                                                value={product.price}
+                                                                onChange={(e) => handleProductChange(product.productId, 'price', parseFloat(e.target.value))}
+                                                                onBlur={() => handleProductBlur(product)}
+                                                                variant="outlined"
+                                                                sx={{ maxWidth: '30%' }}
+                                                            />
+                                                            <IconButton
+                                                                onClick={() => handleToggleProductStatus(product)}
+                                                                color={product.isActive ? "primary" : "default"}
+                                                                sx={{ ml: 1 }}
+                                                            >
+                                                                {product.isActive ? <ToggleOnIcon /> : <ToggleOffIcon />}
+                                                            </IconButton>
+                                                            <IconButton
+                                                                onClick={() => handleDeleteProduct(product.productId, category.SK.split('#')[1])}
+                                                                color="error"
+                                                            >
+                                                                <DeleteIcon />
+                                                            </IconButton>
+                                                        </Box>
+                                                    </ListItem>
+                                                </Paper>
+                                            ))}
+                                        </List>
+                                    </AccordionDetails>
+                                </Accordion>
                             ))}
                         </List>
                     </Box>
@@ -485,3 +496,4 @@ const Menu = () => {
 };
 
 export default Menu;
+

@@ -42,6 +42,7 @@ interface Category {
     categoryName: string;
     SK: string;
     products?: Product[];
+    order: number;
 }
 
 interface User {
@@ -85,20 +86,19 @@ const ViewMenu: React.FC = () => {
                 if (response.ok) {
                     const data = await response.json();
 
-                    // Verifica la respuesta completa
                     console.log('Respuesta completa del backend:', data);
 
-                    const categories: Category[] = data.categories.map((category: Category) => ({
-                        ...category,
-                        products: category.products
-                            ?.filter(product => product.status)
-                            .sort((a, b) => a.order - b.order), // Ordena por atributo `order`
-                    }));
+                    // Ordenar categorías y sus productos
+                    const categories: Category[] = data.categories
+                        .sort((a: Category, b: Category) => a.order - b.order) // Ordenar las categorías por `order`
+                        .map((category: Category) => ({
+                            ...category,
+                            products: category.products
+                                ?.filter(product => product.status)
+                                .sort((a, b) => a.order - b.order), // Ordenar productos por `order`
+                        }));
 
-                    const validCategories = categories.filter(category => category.products?.length);
-
-                    console.log('Categorías procesadas:', validCategories);
-                    setCategories(validCategories);
+                    setCategories(categories);
                 } else {
                     console.error('Error al obtener las categorías');
                 }
@@ -108,8 +108,6 @@ const ViewMenu: React.FC = () => {
                 setIsLoading(false);
             }
         };
-
-
 
         const fetchUser = async () => {
             if (!userId) return;
@@ -123,7 +121,7 @@ const ViewMenu: React.FC = () => {
                         phoneNumber: data.phoneNumber,
                         description: data.description,
                         socialMedia: data.socialMedia,
-                        imageUrl: data.imageUrl || '', // Asegúrate de traer la URL de la imagen más reciente
+                        imageUrl: data.imageUrl || '',
                     });
                 } else {
                     console.error('Error al obtener la información del usuario');
